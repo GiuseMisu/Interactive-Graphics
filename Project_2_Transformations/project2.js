@@ -45,13 +45,13 @@ function GetTransform( positionX, positionY, rotation, scale ){
  */
 
 function ApplyTransform( trans1, trans2 ){
-	let to_ret = new Array();
+	to_ret = new Array(9);
 	for (let i = 0; i < 3; i++){
 		for (let j = 0; j < 3; j++){
-			let a = trans1[i] * trans2[j * 3];
-			let b = trans1[i + 3] * trans2[j * 3 + 1];
-			let c = trans1[i + 6] * trans2[j * 3 + 2];
-			to_ret[i + j * 3] = a + b + c;
+			let a = trans1[i* 3] * trans2[j];
+			let b = trans1[i * 3 + 1] * trans2[j + 3];
+			let c = trans1[i * 3 + 2] * trans2[j + 6];
+			to_ret[i * 3 + j] = a + b + c;
 		}
 	}
 	return to_ret;
