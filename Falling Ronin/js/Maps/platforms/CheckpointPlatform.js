@@ -46,11 +46,10 @@ export class CheckpointPlatform extends BasePlatform {
         
         this.addToScene(); 
         
-        // Register checkpoint with game state
+        // Register checkpoint within game state
         if (this.gameState) {
             const checkpointPosition = { x: x, y: y + 0.25, z: z }; // Surface position
             this.gameState.addCheckpoint(platformId, checkpointPosition, platformName);
-            //console.log(`Registered checkpoint - ID: ${platformId}, Name: ${platformName}, Position: x=${x}, y=${y + 0.25}, z=${z}`);
         }
         
         console.log(`Created Checkpoint Platform - ID: ${platformId}, Name: ${platformName}, Position: x=${x}, y=${y}, z=${z}`);
@@ -61,57 +60,59 @@ export class CheckpointPlatform extends BasePlatform {
     }
 
     loadArchModel(x, y, z) {
-        if (this.assetManager) {
-            this.assetManager.loadFBX(
-                'assets/models/Japanese_Arch_Low.FBX',
-                (object) => {
-                    this.archModel = object;
-                    this.archModel.scale.set(0.013, 0.013, 0.013);
-                    // Place the base of the arch exactly on the platform surface
-                    // Platform height is 0.5, so y + 4 is the top
-                    this.archModel.position.set(x, y + 4, z);
-                    const archBox = new THREE.Box3().setFromObject(this.archModel);
-                    if (this.archModel.children) {
-                        this.archModel.children.forEach((child, idx) => {
-                            const childBox = new THREE.Box3().setFromObject(child);
-                         });
-                    }
-                    // Use child meshes for more accurate pillar/top collision
-                    // Child[1] = Columna_1 (left pillar), Child[2] = Columna_2 (right pillar), Child[3] = top 
-                    const boundingBoxes = [];
-                    const boxHelpers = [];
-                    if (this.archModel.children) {
-                        // Left pillar
-                        const leftPillar = this.archModel.children.find(child => child.name.includes('Columna_1'));
-                        if (leftPillar) {
-                            const leftBox = new THREE.Box3().setFromObject(leftPillar);
-                            boundingBoxes.push(leftBox);
-                        }
-                        // Right pillar
-                        const rightPillar = this.archModel.children.find(child => child.name.includes('Columna_2'));
-                        if (rightPillar) {
-                            const rightBox = new THREE.Box3().setFromObject(rightPillar);
-                            boundingBoxes.push(rightBox);
-                        }
-                        // Top beam
-                        const topBeam = this.archModel.children.find(child => child.name.includes('Techo'));
-                        if (topBeam) {
-                            const topBox = new THREE.Box3().setFromObject(topBeam);
-                            boundingBoxes.push(topBox);
-                        }
-                    }
-                    this.archModel.userData.boundingBoxes = boundingBoxes;
-                    this.archModel.userData.boxHelpers = boxHelpers;
-                    
-                    this.scene.add(this.archModel);
-                    console.log(`Loaded Japanese Arch model for checkpoint platform ${this.platformId}`);
-                },
-                undefined,
-                (error) => {
-                    console.error('Error loading Japanese Arch model:', error);
+       const onLoad = (object) => {
+            this.archModel = object;
+            this.archModel.scale.set(0.013, 0.013, 0.013);
+            // Place the base of the arch exactly on the platform surface
+            // Platform height is 0.5, so y + 4 is the top
+            this.archModel.position.set(x, y + 4, z);
+            const archBox = new THREE.Box3().setFromObject(this.archModel);
+            if (this.archModel.children) {
+                this.archModel.children.forEach((child, idx) => {
+                    const childBox = new THREE.Box3().setFromObject(child);
+                 });
+            }
+            // Use child meshes for more accurate pillar/top collision
+            // Child[1] = Columna_1 (left pillar), Child[2] = Columna_2 (right pillar), Child[3] = top 
+            const boundingBoxes = [];
+            const boxHelpers = [];
+            if (this.archModel.children) {
+                // Left pillar
+                const leftPillar = this.archModel.children.find(child => child.name.includes('Columna_1'));
+                if (leftPillar) {
+                    const leftBox = new THREE.Box3().setFromObject(leftPillar);
+                    boundingBoxes.push(leftBox);
                 }
-            );
+                // Right pillar
+                const rightPillar = this.archModel.children.find(child => child.name.includes('Columna_2'));
+                if (rightPillar) {
+                    const rightBox = new THREE.Box3().setFromObject(rightPillar);
+                    boundingBoxes.push(rightBox);
+                }
+                // Top beam
+                const topBeam = this.archModel.children.find(child => child.name.includes('Techo'));
+                if (topBeam) {
+                    const topBox = new THREE.Box3().setFromObject(topBeam);
+                    boundingBoxes.push(topBox);
+                }
+            }
+            this.archModel.userData.boundingBoxes = boundingBoxes;
+            this.archModel.userData.boxHelpers = boxHelpers;
+            
+            this.scene.add(this.archModel);
+            console.log(`Loaded Japanese Arch model for checkpoint platform ${this.platformId}`);
+        };
+        const onError = (error) => {
+            console.error('Error loading Japanese Arch model:', error);
+        };
+
+        if (this.assetManager) { // Use asset manager if available
+            this.assetManager.loadFBX('assets/models/Japanese_Arch_Low.FBX', onLoad, undefined, onError);
         } 
+        else {
+            const loader = new FBXLoader();
+            loader.load('assets/models/Japanese_Arch_Low.FBX', onLoad, undefined, onError);
+        }
     }
 
     removeFromScene() {

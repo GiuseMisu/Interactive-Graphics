@@ -56,11 +56,11 @@ window.cameraController = new CameraController(camera,
 // Initialize day-night cycle
 const dayNightCycle = new DayNightCycle(scene, renderer);
 
-// Initialize shadow manager
-const shadowManager = new ShadowManager(scene, renderer, dayNightCycle);
-
 // Initialize game components
 const gameState = new GameState();
+
+// Initialize shadow manager
+const shadowManager = new ShadowManager(scene, renderer, dayNightCycle);
 gameState.setShadowManager(shadowManager);
 
 const inputManager = new InputManager(gameState);
@@ -73,7 +73,7 @@ window.game = game;
 const musicManager = new MusicManager();
 window.musicManager = musicManager; // Make it globally available
 
-// Add a state to control when the game is running
+// state to control when the game is running
 let gameStarted = false;
 window.gameStarted = gameStarted; // Expose to window for UI access
 

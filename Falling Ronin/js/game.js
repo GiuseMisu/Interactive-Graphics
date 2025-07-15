@@ -7,7 +7,7 @@ export class Game {
         this.scene = scene;
         this.player = player;
         this.assetManager = assetManager;
-        this.gameState = gameState || new GameState(); // Use provided gameState or create new one
+        this.gameState = gameState // Use provided gameState 
         this.mapManager = new MapManager(this.gameState, assetManager); // Pass asset manager
         this.startGameCallback = null;
         
@@ -30,6 +30,7 @@ export class Game {
         this.gameState.setPlayer(player);
     }
 
+    //takes as input the function defined in the main file regarding the start of the game
     setStartGameCallback(callback) {
         this.startGameCallback = callback;
         if (this.ui) {
@@ -37,6 +38,7 @@ export class Game {
         }
     }
     
+    // Set callback for returning to menu, calls the function defined in the main file
     setReturnToMenuCallback(callback) {
         if (this.ui) {
             this.ui.setReturnToMenuCallback(callback);
@@ -44,7 +46,7 @@ export class Game {
     }
     
     update(deltaTime) {
-        // Update game logic here
+        // Update game logic here, cause is not present in the main file
         this.mapManager.update(deltaTime);
     }
     

@@ -29,6 +29,7 @@ export class GameState {
     //=========================== CHECKPOINTS  METHODS ===========================
 
     // Checkpoint methods, needed to manage checkpoints 
+    //Function called from inside the checkpoint class constructor 
     addCheckpoint(platformId, position, platformName) {
         //bind checkpoint to platform
         this.checkpoints.set(platformId, {
@@ -36,8 +37,6 @@ export class GameState {
             platformName: platformName, // Name of the platform 
             reached: false // Initially not reached, control if checkpoint has been activated or not
         });
-        //reduce log spam
-        //console.log(`GameState: Added checkpoint - ID: ${platformId}, Name: ${platformName}, Total checkpoints: ${this.checkpoints.size}`);
     }
     
     activateCheckpoint(platformId) {
@@ -83,13 +82,13 @@ export class GameState {
     
     // Goal platform methods, needed to manage the goal platform
     // BIND goal TO platform so that the player can reach it and complete the level
+    // function called inside the goal platform class constructor
     setGoalPlatform(platformId, position, platformName) {
         this.goalPlatform = {
             platformId: platformId,
             position: position,
             platformName: platformName
         };
-        console.log(`GameState: Set goal platform - ID: ${platformId}, Name: ${platformName}`);
     }
     
     completeLevel() {
@@ -107,7 +106,7 @@ export class GameState {
     
     //============================================= SHADOW METHODS ============================================
     
-    // Shadow management methods
+    // Shadow management methods--> called inside the main file
     setShadowManager(shadowManager) {
         this.shadowManager = shadowManager;
         console.log('Shadow manager set in GameState');

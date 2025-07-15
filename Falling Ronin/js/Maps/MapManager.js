@@ -47,11 +47,6 @@ export class MapManager {
         // Set the platform manager for the player
         if (this.player && this.currentMap) {
             this.player.setPlatformManager(this.currentMap);
-            
-            // Set the barrel manager if the map has barrels (Map1)
-            /* if (typeof this.currentMap.getBarrels === 'function') {
-                this.player.setBarrelManager(this.currentMap);
-            } */
         }
     }
 
@@ -87,11 +82,6 @@ export class MapManager {
         // Clear platform manager reference from player
         if (this.player) {
             this.player.setPlatformManager(null);
-            
-            // Clear barrel manager if it exists
-            /* if (typeof this.player.setBarrelManager === 'function') {
-                this.player.setBarrelManager(null);
-            } */
         }
     }
     

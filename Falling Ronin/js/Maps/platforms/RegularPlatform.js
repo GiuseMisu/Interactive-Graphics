@@ -113,24 +113,6 @@ export class RegularPlatform extends BasePlatform {
                         if (child.material.emissiveIntensity !== undefined) {
                             child.material.emissiveIntensity = 0;
                         }
-                        // Apply shadow settings based on current shadow mode
-                        if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                            const shadowMode = window.game.gameState.getShadowMode();
-                            if (shadowMode === 0) { // No shadows
-                                child.castShadow = false;
-                                child.receiveShadow = false;
-                            } else if (shadowMode === 1) { // All shadows
-                                child.castShadow = true;
-                                child.receiveShadow = true;
-                            } else { // Platforms only - lamps are decorative objects, no shadows
-                                child.castShadow = false;
-                                child.receiveShadow = false;
-                            }
-                        } else {
-                            // Default: lamps don't cast shadows
-                            child.castShadow = false;
-                            child.receiveShadow = false;
-                        }
                     }
                 });
                 
@@ -199,24 +181,6 @@ export class RegularPlatform extends BasePlatform {
                     }
                     if (child.material.emissiveIntensity !== undefined) {
                         child.material.emissiveIntensity = 0;
-                    }
-                    // Apply shadow settings based on current shadow mode
-                    if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                        const shadowMode = window.game.gameState.getShadowMode();
-                        if (shadowMode === 0) { // No shadows
-                            child.castShadow = false;
-                            child.receiveShadow = false;
-                        } else if (shadowMode === 1) { // All shadows
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                        } else { // Platforms only - lamps are decorative objects, no shadows
-                            child.castShadow = false;
-                            child.receiveShadow = false;
-                        }
-                    } else {
-                        // Default: lamps don't cast shadows
-                        child.castShadow = false;
-                        child.receiveShadow = false;
                     }
                 }
             });

@@ -5,7 +5,7 @@ export class UI {
         this.hasCheckpoint = false;
         this.checkpointName = '';
         this.startGameCallback = null;
-        this.returnToMenuCallback = null; // NEW: Callback for returning to menu
+        this.returnToMenuCallback = null; //  Callback for returning to menu
         this.autoReturnTimeout = null; // For level complete auto return
         this.createMapSelectionScreen();
         this.createCoordinatesDisplay();
@@ -16,10 +16,12 @@ export class UI {
         this.createReturnToMenuButton();
     }
 
+    //function that comes directly from the main file passing from the gameclass
     setStartGameCallback(callback) {
         this.startGameCallback = callback;
     }
 
+    // Set callback for returning to menu, called from the game class
     setReturnToMenuCallback(callback) { // NEW: Method to set the callback
         this.returnToMenuCallback = callback;
     }

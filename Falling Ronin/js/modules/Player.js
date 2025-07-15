@@ -287,9 +287,6 @@ export class Player {
             if (this.checkWallCollision() || this.checkImportedModelCollision()) {
                 this.model.position.z = originalZ; // Rollback Z movement for walls or imported models
             }
-            /* else if (this.checkBarrelCollision()) {
-                this.model.position.z = originalZ; // Rollback Z movement for barrels too, let main check handle death
-            } */
 
             // Try Y movement (jumping)
             this.model.position.y += this.velocityY * deltaTime * 60;
@@ -314,12 +311,6 @@ export class Player {
 
         // Physics: Apply gravity and handle vertical movement
         this.applyPhysics(deltaTime);
-
-        // Check for barrel collision regardless of movement state
-        // This ensures barrels that move into stationary players are detected
-        /* if (this.checkBarrelCollision()) {
-            return; // Exit early since player will be respawned
-        } */
 
         // Check for checkpoint detection
         this.checkCheckpoints(deltaTime);
@@ -351,13 +342,6 @@ export class Player {
             this.model.position.y = yCorrection;
             this.velocityY = 0;
         }
-
-        // Check for barrel collision during vertical movement (jumping/falling)
-       /*  if (this.checkBarrelCollision()) {
-            // If collision detected during vertical movement, rollback and let main check handle death
-            this.model.position.y = preVerticalPosition.y;
-            this.velocityY = 0; // Stop vertical movement
-        } */
 
         // Check for platform collision
         const platformHeight = this.checkPlatformCollision();
@@ -1277,40 +1261,6 @@ export class Player {
         return null;
     }
     
-    // Barrel collision detection methods
-    //====================== BARREL COLLISION ========//
-   /*  checkBarrelCollision() {
-        if (!this.model || !this.barrelManager) return false;
-
-        const barrels = this.barrelManager.getBarrels();
-        if (!barrels || barrels.length === 0) return false;
-
-        this.updatePlayerBoundingBox();
-
-        for (const barrel of barrels) {
-            // Inline collision logic (previously in checkPlayerBarrelCollision)
-            if (barrel && barrel.mesh) {
-                const barrelPos = barrel.mesh.position;
-                const playerPos = this.model.position;
-
-                const distance = playerPos.distanceTo(barrelPos);
-                const collisionDistance = 1.5; // Generous collision distance for testing
-
-                if (distance < collisionDistance) {
-                    console.log("Barrel collision detected - bouncing off player!");
-                    // Check cooldown to prevent multiple collision detections
-                    const currentTime = Date.now();
-                    if (currentTime - this.lastBarrelCollisionTime > 2000) { // Increased to 2 second cooldown
-                        this.lastBarrelCollisionTime = currentTime;
-                        this.playerDied('barrel collision');
-                    }
-                    return true; // Always return true if collision detected
-                }
-            }
-        }
-        return false;
-    } */
-
     // Helper methods for consistent position calculations
     //====================== POSITION HELPERS ======================
     getPlayerFeetPosition() {

@@ -10,7 +10,7 @@ export class Barrel {
         this.bounciness = 0.9;
         this.groundLevel = 0.25;
         this.lifetime = 0;
-        this.maxLifetime = 30; // 30 seconds before respawn
+        this.maxLifetime = 30; // 30 seconds before respawn [default]
         this.respawnThreshold = -10;
         this.barrelRadius = 0.5;
         this.player = null; // Reference to player for collision
@@ -43,6 +43,7 @@ export class Barrel {
             window.game.gameState.getShadowManager().updateObjectShadows(this.mesh);
         } else {
             // Default shadow settings
+            console.warn("[BARREL] ShadowManager not found, applying default shadow settings.");
             this.mesh.castShadow = true;
             this.mesh.receiveShadow = true;
         }
@@ -58,7 +59,7 @@ export class Barrel {
         // Add metal bands around the barrel for visual detail
         const bandGeometry = new THREE.TorusGeometry(0.52, 0.02, 8, 16);
         const bandMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x444444,
+            color: 0x444444, // metallic color
             metalness: 0.8,
             roughness: 0.2
         });

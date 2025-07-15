@@ -210,14 +210,6 @@ export class LoadingManager {
         this.onCompleteCallback = callback;
     }
 
-    /*     NEVER CALLED 
-    setOnStartCallback(callback) {
-        this.onStartCallback = callback;
-    }
-    setOnProgressCallback(callback) {
-        this.onProgressCallback = callback;
-    } */
-
     // Getter for the Three.js LoadingManager--> called in main.js file
     getThreeLoadingManager() {
         return this.threeLoadingManager;
@@ -230,11 +222,6 @@ export class LoadingManager {
         return this.isLoading;
     }
     
-    // Get current progress (0-1)
-    // never called
-    // getProgress() {
-    //     return this.loadingProgress;
-    // }
     
     // Reset the loading manager state
     reset() {

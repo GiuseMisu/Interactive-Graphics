@@ -45,7 +45,6 @@ export class GoalPlatform extends BasePlatform {
         if (this.gameState) {
             const goalPosition = { x: x, y: y + 0.25, z: z };
             this.gameState.setGoalPlatform(platformId, goalPosition, platformName);
-            //console.log(`Registered goal platform - ID: ${platformId}, Name: ${platformName}, Position: x=${x}, y=${y + 0.25}, z=${z}`);
         }
         console.log(`Created Goal Platform - ID: ${platformId}, Name: ${platformName}, Position: x=${x}, y=${y}, z=${z}`);
     }
@@ -89,33 +88,15 @@ export class GoalPlatform extends BasePlatform {
             object.rotation.y = THREE.MathUtils.degToRad(0);
             // Apply stone/rock material and shadow settings
             const stoneMaterial = new THREE.MeshStandardMaterial({
-            color: 0x888888,
-            roughness: 0.85,
-            metalness: 0.15,
-            flatShading: true
-            });
+                                                            color: 0x888888,
+                                                            roughness: 0.85,
+                                                            metalness: 0.15,
+                                                            flatShading: true
+                                                            });
             object.traverse((child) => {
-            if (child.isMesh) {
-                child.material = stoneMaterial;
-                // Apply shadow settings based on current shadow mode
-                if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                const shadowMode = window.game.gameState.getShadowMode();
-                if (shadowMode === 0) { // No shadows
-                    child.castShadow = false;
-                    child.receiveShadow = false;
-                } else if (shadowMode === 1) { // All shadows
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                } else { // Platforms only - lanterns are decorative objects, no shadows
-                    child.castShadow = false;
-                    child.receiveShadow = false;
+                if (child.isMesh) {
+                    child.material = stoneMaterial;
                 }
-                } else {
-                // Default: lanterns don't cast shadows
-                child.castShadow = false;
-                child.receiveShadow = false;
-                }
-            }
             });
             // Add bounding box for collision
             object.userData.boundingBox = new THREE.Box3().setFromObject(object);
@@ -186,32 +167,7 @@ export class GoalPlatform extends BasePlatform {
             this.buddhistTemple.rotation.set(0, 0, 0);
             // Add bounding box for collision
             this.buddhistTemple.userData.boundingBox = new THREE.Box3().setFromObject(this.buddhistTemple);
-            this.buddhistTemple.traverse((child) => {
-                if (child.isMesh) {
-                    // Apply shadow settings based on current shadow mode
-                    if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                        const shadowMode = window.game.gameState.getShadowMode();
-                        if (shadowMode === 0) { // No shadows
-                            child.castShadow = false;
-                            child.receiveShadow = false;
-                        } else if (shadowMode === 1) { // All shadows
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                        } else { // Platforms only - temple is decorative object, no shadows
-                            child.castShadow = false;
-                            child.receiveShadow = false;
-                        }
-                    } else {
-                        // Default: temple doesn't cast shadows
-                        child.castShadow = false;
-                        child.receiveShadow = false;
-                    }
-                    if (child.material) {
-                        child.material.roughness = 0.7;
-                        child.material.metalness = 0.1;
-                    }
-                }
-            });
+
             this.scene.add(this.buddhistTemple);
             console.log(`Successfully loaded Buddhist Temple for goal platform ${this.platformId} at edge position`);
         };

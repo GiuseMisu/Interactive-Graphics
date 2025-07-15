@@ -7,7 +7,7 @@ export class DayNightCycle {
         
         // Time management
         this.time = 0; // Current time in the cycle (0-1)
-        this.cycleDuration = 120; // 120 (default) Duration in seconds for full cycle
+        this.cycleDuration = 30; // 120 (default) Duration in seconds for full cycle
         this.timeSpeed = 1; // Speed multiplier
         
         // Lighting
@@ -21,7 +21,10 @@ export class DayNightCycle {
         
         // Particle systems for atmospheric effects
         this.stars = null;
+
         // Sky colors 
+        // defines a set of colors for different times of day
+        // then through the lerp function blend them together -> the passage from one to another is based on the sun's height
         this.skyColors = {
                 day: {
                     top: new THREE.Color(0x5DADE2),    // Lighter blue at top
@@ -47,16 +50,19 @@ export class DayNightCycle {
             };
         
         this.initializeLighting();
-        this.createCelestialBodies();
+        this.createRealisticSun(); 
+        this.createRealisticMoon(); 
         this.createSkyGradient();
-        this.createAtmosphericEffects();
+        this.createStars();
         this.setupShadows();
     }
       
     initializeLighting() {
         // Sun light (directional)
-        this.sunLight = new THREE.DirectionalLight(0xFFFFE0, 1.2);  // Increased intensity
-        this.sunLight.castShadow = true;
+        this.sunLight = new THREE.DirectionalLight(0xFFFFE0, 1.2); 
+        this.sunLight.castShadow = true; // Enable to see shadows produced by sun light
+
+        // shadow PROPERTIES: BIGGER FOR SUN THEN MOON
         this.sunLight.shadow.mapSize.width = 2048;
         this.sunLight.shadow.mapSize.height = 2048;
         this.sunLight.shadow.camera.near = 0.1;
@@ -68,29 +74,26 @@ export class DayNightCycle {
         this.scene.add(this.sunLight);
         
         // Moon light (directional, brighter for better night visibility)
-        this.moonLight = new THREE.DirectionalLight(0xB0C4DE, 0.8); // Increased intensity
-        this.moonLight.castShadow = true;
+        this.moonLight = new THREE.DirectionalLight(0xB0C4DE, 0.8);
+        this.moonLight.castShadow = true; // Enable to see shadows produced by moon light
+
+        // shadow PROPERTIES: BIGGER FOR SUN THEN MOON
         this.moonLight.shadow.mapSize.width = 1024;
         this.moonLight.shadow.mapSize.height = 1024;
         this.scene.add(this.moonLight);
         
-        // Ambient light (even brighter for night)
-        this.ambientLight = new THREE.AmbientLight(0x606060, 0.75); // Increased intensity and lightness
+        // Ambient light 
+        this.ambientLight = new THREE.AmbientLight(0x606060, 0.75);
+        // Ambient light should always be present to avoid complete darkness (so is not dependent on sun/moon visibility)
         this.scene.add(this.ambientLight);
+
+        //NO SHADOW SET UP FOR THE AMBIENT LIGHT
     }
     
-    createCelestialBodies() {
-        // Create realistic Sun with animated surface
-        this.createRealisticSun();
-        
-        // Create realistic Moon with crater texture
-        this.createRealisticMoon();
-    }
-
 
     
     createSkyGradient() {
-        // Create a large sphere for sky gradient background
+        // Sphere for sky gradient background
         const skyGeometry = new THREE.SphereGeometry(165, 32, 32); // originally 80, increased for better coverage on map2
         
         // Create vertex colors for gradient effect
@@ -98,28 +101,29 @@ export class DayNightCycle {
         const positionAttribute = skyGeometry.attributes.position;
         
         for (let i = 0; i < positionAttribute.count; i++) {
+            //!!each vertex has a color based on its height to make the gradient!!
+            
             const y = positionAttribute.getY(i);
             const normalizedY = (y + 80) / 160; // Normalize to 0-1
-            
-            // Default day colors
+
             const color = new THREE.Color();
-            color.lerpColors(this.skyColors.day.horizon, this.skyColors.day.top, normalizedY);
             
-            vertexColors.push(color.r, color.g, color.b);
+            //blend the color defined for each phase
+            color.lerpColors(this.skyColors.day.horizon, this.skyColors.day.top, normalizedY);
+            vertexColors.push(color.r, color.g, color.b); //Changing the color based on height
         }
-        
         skyGeometry.setAttribute('color', new THREE.Float32BufferAttribute(vertexColors, 3));
         
         const skyMaterial = new THREE.MeshBasicMaterial({
-            vertexColors: true,
+            vertexColors: true, // Use vertex colors for gradient
             side: THREE.BackSide,
             fog: false
         });
         
         this.skyGradientMesh = new THREE.Mesh(skyGeometry, skyMaterial);
-        this.scene.add(this.skyGradientMesh);
+        this.scene.add(this.skyGradientMesh); // add to the scene the sky gradient mesh (sphere)
         
-        // Set initial background color to prevent white screen
+        // Set initial background color
         this.scene.background = this.skyColors.day.horizon;
         
         // Force initial sky gradient update
@@ -128,32 +132,12 @@ export class DayNightCycle {
         }, 100);
     }
     
-    createAtmosphericEffects() {
-        // Create stars for night time
-        this.createStars();
-    }
-
+    
     createRealisticSun() {
-        // Create simple sphere - keep surface deformation for shape variety
+        // sphere 
         const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
         
-        // Keep subtle deformation for non-perfect sphere
-        const positions = sunGeometry.attributes.position.array;
-        for (let i = 0; i < positions.length; i += 3) {
-            const x = positions[i];
-            const y = positions[i + 1];
-            const z = positions[i + 2];
-            
-            // Light surface irregularities
-            const noise = (Math.random() - 0.5) * 0.02;
-            const length = Math.sqrt(x * x + y * y + z * z);
-            positions[i] = x * (1 + noise);
-            positions[i + 1] = y * (1 + noise);
-            positions[i + 2] = z * (1 + noise);
-        }
-        
-        sunGeometry.attributes.position.needsUpdate = true;
-        sunGeometry.computeVertexNormals();
+        //sunGeometry.computeVertexNormals(); // not needed for basic material
         
         // Simple yellow/orange material
         const sunMaterial = new THREE.MeshBasicMaterial({
@@ -162,7 +146,7 @@ export class DayNightCycle {
         });
         
         this.sun = new THREE.Mesh(sunGeometry, sunMaterial);
-        // Sun should never cast shadows - it's a light source!
+        // Sun should never cast shadows - it's NOT THE REAL a light source (this.sunLight the real light source)
         this.sun.castShadow = false;
         this.sun.receiveShadow = false;
         this.scene.add(this.sun);
@@ -170,27 +154,11 @@ export class DayNightCycle {
 
     
     createRealisticMoon() {
-        // Create simple sphere - keep surface deformation for shape variety
+        // sphere
         const moonGeometry = new THREE.SphereGeometry(0.8, 32, 32);
-        
-        // Keep subtle deformation for non-perfect sphere
-        const positions = moonGeometry.attributes.position.array;
-        for (let i = 0; i < positions.length; i += 3) {
-            const x = positions[i];
-            const y = positions[i + 1];
-            const z = positions[i + 2];
-            
-            // Light surface irregularities
-            const noise = (Math.random() - 0.5) * 0.015;
-            const length = Math.sqrt(x * x + y * y + z * z);
-            positions[i] = x * (1 + noise);
-            positions[i + 1] = y * (1 + noise);
-            positions[i + 2] = z * (1 + noise);
-        }
-        
-        moonGeometry.attributes.position.needsUpdate = true;
-        moonGeometry.computeVertexNormals();
-        
+
+        //moonGeometry.computeVertexNormals(); // not needed for basic material
+
         // Simple gray material
         const moonMaterial = new THREE.MeshBasicMaterial({
             color: 0xC0C0C0,  // Light gray
@@ -198,7 +166,8 @@ export class DayNightCycle {
         });
         
         this.moon = new THREE.Mesh(moonGeometry, moonMaterial);
-        // Moon should never cast shadows - it's a light source!
+
+        // Moon should never cast shadows - it's NOT THE REAL a light source (this.moonLight the real light source)
         this.moon.castShadow = false;
         this.moon.receiveShadow = false;
         this.scene.add(this.moon);
@@ -207,36 +176,32 @@ export class DayNightCycle {
     createStars() {
         const starGeometry = new THREE.BufferGeometry();
         const starCount = 1000;
-        const positions = new Float32Array(starCount * 3);
-        const sizes = new Float32Array(starCount);
+        const positions = new Float32Array(starCount * 3); //for each star 3 coordinates (x, y, z)
         
         for (let i = 0; i < starCount; i++) {
-            // Create stars in a sphere around the scene
-            const radius = 130 + Math.random() * 10; //previously 70, increased due to map2 being 
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.random() * Math.PI;
+            // Create stars in a sphere around the scene, displacing them randomly
+            const radius = 130 + Math.random() * 10; //how far from the   center
+            const theta = Math.random() * Math.PI * 2;  // Random angle around the sphere [0 to 2π]
+            const phi = Math.random() * Math.PI;  // Random angle from the pole (from the top to the bottom of the sphere) [0 to π]
             
             positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-            positions[i * 3 + 1] = radius * Math.cos(phi);
+            positions[i * 3 + 1] = radius * Math.cos(phi); //y dipende solo da phi, non da theta, perche phi è l'angolo from the top to the bottom of the sphere
             positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
             
-            // Variable star sizes
-            sizes[i] = 0.8 + Math.random() * 0.8; // Range from 0.8 to 1.6
         }
         
         starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        
+
         const starMaterial = new THREE.PointsMaterial({
-            color: 0xFFFFFF,
-            size: 0.8,
+            color: 0xFFFFFF, // White stars
+            size: 0.95, // Size of stars
             transparent: true,
             opacity: 0.9,
-            sizeAttenuation: false
+            sizeAttenuation: false // stars dim not non dipende da dist
         });
         
         this.stars = new THREE.Points(starGeometry, starMaterial);
-        this.stars.visible = false;
+        this.stars.visible = false; //switch to true when night -> when sun is low
         this.scene.add(this.stars);
     }
     
@@ -253,13 +218,13 @@ export class DayNightCycle {
         if (this.time > 1) this.time -= 1;
         
         this.updateCelestialPositions();
-        this.updateVisibility();
-        this.updateAtmosphericEffects(deltaTime);
+        this.updateSunMoonVisibility(); //switch what is visible based on sun/moon height
+        this.updateStarEffects(deltaTime);
         this.updateLighting();
         this.updateSkyGradient();
     }
 
-    updateVisibility() {
+    updateSunMoonVisibility() {
         const sunHeight = this.sun.position.y;
         const moonHeight = this.moon.position.y;
         
@@ -267,14 +232,14 @@ export class DayNightCycle {
         this.moon.visible = moonHeight > 0;
     }
     
-    updateAtmosphericEffects(deltaTime) {
+    updateStarEffects(deltaTime) {
         const sunHeight = this.sun.position.y / 30;
         
         // Stars visibility and twinkling
         if (sunHeight < -0.1) {
             this.stars.visible = true;
             this.stars.material.opacity = 0.7 + Math.sin(this.time * 8) * 0.2;
-            this.stars.rotation.y += deltaTime * 0.01;
+            //this.stars.rotation.y += deltaTime * 0.01;
         } else {
             this.stars.visible = false;
         }
@@ -285,12 +250,12 @@ export class DayNightCycle {
         const xOffset = -10; // Adjusted offset for better positioning
         const yOffset = 15; 
 
-        // Basic sun movement - simple arc across sky
+        // sun movement - arc across sky
         const sunAngle = this.time * Math.PI * 2 - Math.PI/2;
         this.sun.position.set(
             Math.cos(sunAngle) * radius + xOffset,
             Math.sin(sunAngle) * radius * 0.7 + yOffset, // Flatten arc slightly
-            Math.sin(sunAngle * 0.2) * 3 // Small depth variation
+            Math.sin(sunAngle * 0.2) * 3 // Small depth variation due to the distance from the center
         );
 
         // Moon follows opposite path with small offset
@@ -300,12 +265,13 @@ export class DayNightCycle {
             Math.sin(moonAngle) * radius * 0.7 + yOffset,
             Math.sin(moonAngle * 0.3) * 2 // Different depth pattern
         );
-                
-        // Update light positions
+
+        // Update light positions, clone the sun position for the light source positions
         this.sunLight.position.copy(this.sun.position);
         this.moonLight.position.copy(this.moon.position);
         
-        this.sunLight.target.position.set(0, 0, 0);
+        //the target of the light is always the center of the scene
+        this.sunLight.target.position.set(0, 0, 0); 
         this.moonLight.target.position.set(0, 0, 0);
     }    
     
@@ -313,23 +279,22 @@ export class DayNightCycle {
         const sunHeight = Math.max(0, this.sun.position.y / 60);
         const moonHeight = Math.max(0, this.moon.position.y / 60);
         
-        // Significantly improve transition between day and night with higher minimum intensities
-        const minBaseIntensity = 0.6; // Increased minimum intensity for better visibility during transitions
+        const minBaseIntensity = 0.6; 
         
-        // Always ensure some light is present by having a minimum intensity
+        // ensure some light is present by having a minimum intensity
         if (this.sun.visible && sunHeight > 0) {
-            this.sunLight.intensity = Math.max(minBaseIntensity, sunHeight * 1.5); // Further increased brightness
+            this.sunLight.intensity = Math.max(minBaseIntensity, sunHeight * 1.5); 
         } else {
-            this.sunLight.intensity = minBaseIntensity * 0.5; // Keep some minimal sun light even when "off"
+            this.sunLight.intensity = minBaseIntensity * 0.5; // Keep some minimal sun light even when off
         }
         
         if (this.moon.visible && moonHeight > 0) {
-            this.moonLight.intensity = Math.max(minBaseIntensity, moonHeight * 1.5); // Further increased brightness
+            this.moonLight.intensity = Math.max(minBaseIntensity, moonHeight * 1.5); 
         } else {
-            this.moonLight.intensity = minBaseIntensity * 0.5; // Keep some minimal moon light even when "off"
+            this.moonLight.intensity = minBaseIntensity * 0.5; // Keep some minimal moon light even when off
         }
         
-        // Significantly improved ambient light calculation with higher base values
+        // ambient light higher values
         let ambientIntensity;
         if (this.sun.visible && sunHeight > 0) {
             ambientIntensity = 0.7 + sunHeight * 0.3; // Much higher base for daylight
@@ -337,7 +302,7 @@ export class DayNightCycle {
             ambientIntensity = 0.65 + moonHeight * 0.2; // Much higher base for night
         } else {
             // Ensure HIGHER minimum intensity during transitions
-            ambientIntensity = 0.6; // Significantly increased for better visibility
+            ambientIntensity = 0.6; 
         }
         
         this.ambientLight.intensity = ambientIntensity;
@@ -358,7 +323,7 @@ export class DayNightCycle {
 
         // Apply improved shadow settings for better visibility
         if (this.sunLight.shadow) {
-            this.sunLight.shadow.bias = -0.0005; // Reduce shadow acne
+            this.sunLight.shadow.bias = -0.0005; // shadows are less instense
             this.sunLight.shadow.darkness = 0.1; // Make shadows less dark
         }
         if (this.moonLight.shadow) {
@@ -368,116 +333,69 @@ export class DayNightCycle {
     }
     
         
+
     updateSkyGradient() {
-        const sunHeight = this.sun.position.y / 60; // Updated from 30 to 60
+        const sunHeight = this.sun.position.y / 60;
+
         const colorAttribute = this.skyGradientMesh.geometry.attributes.color;
         const positionAttribute = this.skyGradientMesh.geometry.attributes.position;
-        
-        // ...rest of the method stays the same...
+
         let currentColors;
-        
-        // More realistic transition phases with smoother color blending
+
+        // Phase selection (unchanged)
         if (sunHeight > 0.2) {
-            // Full day
             currentColors = this.skyColors.day;
-        } else if (sunHeight > 0.05) {
-            // Late afternoon / early sunset
-            const factor = (sunHeight - 0.05) / 0.15;
+        }
+        else if (sunHeight > 0.05) {
+            const factor = (sunHeight - 0.05) / 0.15; //--> makes the transition smoother
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.sunset.top, this.skyColors.day.top, factor),
                 horizon: new THREE.Color().lerpColors(this.skyColors.sunset.horizon, this.skyColors.day.horizon, factor),
                 sun: new THREE.Color().lerpColors(this.skyColors.sunset.sun, this.skyColors.day.sun, factor)
             };
-        } else if (sunHeight > -0.05) {
-            // Sunset/sunrise period
-            const factor = (sunHeight + 0.05) / 0.1;
-            
+        }
+        else if (sunHeight > -0.05) {
+            const factor = (sunHeight + 0.05) / 0.1; //--> makes the transition smoother
             const mutedSunset = {
                 top: new THREE.Color(0x34495E),
                 horizon: new THREE.Color(0xE67E22),
                 sun: new THREE.Color(0xF39C12)
             };
-            
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.night.top, mutedSunset.top, factor),
                 horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, mutedSunset.horizon, factor),
                 sun: new THREE.Color().lerpColors(this.skyColors.night.moon, mutedSunset.sun, factor)
             };
-        } else if (sunHeight > -0.2) {
-            // Early twilight
-            const factor = (sunHeight + 0.2) / 0.15;
-            
+        } 
+        else if (sunHeight > -0.2) {
+            const factor = (sunHeight + 0.2) / 0.15; //--> makes the transition smoother
             const twilightColors = {
                 top: new THREE.Color(0x2C3E50),
                 horizon: new THREE.Color(0x34495E),
                 sun: new THREE.Color(0x5D6D7E)
             };
-            
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.night.top, twilightColors.top, factor),
                 horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, twilightColors.horizon, factor),
                 sun: new THREE.Color().lerpColors(this.skyColors.night.moon, twilightColors.sun, factor)
             };
-        } else {
-            // Full night
+        } 
+        else {
             currentColors = this.skyColors.night;
         }
-        
-        // Update vertex colors with adjusted distance calculations
+
+        // base gradient per vertex
         for (let i = 0; i < positionAttribute.count; i++) {
-            const x = positionAttribute.getX(i);
             const y = positionAttribute.getY(i);
-            const z = positionAttribute.getZ(i);
-            
             const normalizedY = (y + 80) / 160;
-            
-            let celestialInfluence = 0;
-            let celestialColor;
-            
-            if (this.sun.visible && sunHeight > 0.05) {
-                const distToSun = Math.sqrt(
-                    Math.pow(x - this.sun.position.x * 1.3, 2) + // Adjusted multiplier for new distance
-                    Math.pow(y - this.sun.position.y * 1.3, 2) +
-                    Math.pow(z - this.sun.position.z * 1.3, 2)
-                );
-                celestialInfluence = Math.max(0, 1 - distToSun / 80) * 0.25; // Adjusted for new distance
-                celestialColor = currentColors.sun;
-            } else if (this.moon.visible && sunHeight < -0.1) {
-                const distToMoon = Math.sqrt(
-                    Math.pow(x - this.moon.position.x * 1.3, 2) +
-                    Math.pow(y - this.moon.position.y * 1.3, 2) +
-                    Math.pow(z - this.moon.position.z * 1.3, 2)
-                );
-                celestialInfluence = Math.max(0, 1 - distToMoon / 60) * 0.1; // Adjusted for new distance
-                celestialColor = currentColors.moon || currentColors.sun;
-            }
-            
+
             const baseColor = new THREE.Color();
             baseColor.lerpColors(currentColors.horizon, currentColors.top, normalizedY);
-            
-            if (celestialInfluence > 0 && celestialColor) {
-                baseColor.lerp(celestialColor, celestialInfluence);
-            }
-            
+
             colorAttribute.setXYZ(i, baseColor.r, baseColor.g, baseColor.b);
         }
-        
+
         colorAttribute.needsUpdate = true;
-}
+    }
 
-
-    // Utility methods
-    setTimeOfDay(timeValue) {
-        this.time = Math.max(0, Math.min(1, timeValue));
-    }
-    
-    setTimeSpeed(speed) {
-        this.timeSpeed = speed;
-    }
-    
-    getCurrentTimeOfDay() {
-        if (this.time < 0.25 || this.time > 0.75) return 'night';
-        if (this.time > 0.4 && this.time < 0.6) return 'day';
-        return 'twilight';
-    }
 }

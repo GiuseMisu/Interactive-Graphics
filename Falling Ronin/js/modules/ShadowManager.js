@@ -19,6 +19,7 @@ export class ShadowManager {
         this.applyShadowMode(this.shadowMode);
     }
     
+    //CALLED WHEN PRESSED THE BUTTON TO CHANGE SHADOW MODE
     setShadowMode(mode) {
         this.shadowMode = mode;
         this.applyShadowMode(mode);
@@ -53,14 +54,14 @@ export class ShadowManager {
     }
     
     disableAllShadows() {
-        // Disable the WEBGL renderer shadow mapping
+        // Disable the WEBGL renderer FOR shadow mapping
         this.renderer.shadowMap.enabled = false;
 
         // Disable light shadows, meaning no light will cast shadows at all
         this.dayNightCycle.sunLight.castShadow = false;
         this.dayNightCycle.moonLight.castShadow = false;
         
-        // Disable shadows on all scene objects
+        // Disable shadows on ALL scene objects
         this.scene.traverse((child) => {
             if (child.isMesh) {
                 // Never disable shadows for celestial bodies - they should stay off
@@ -150,7 +151,8 @@ export class ShadowManager {
                     // Enable shadows for platforms
                     child.castShadow = true;
                     child.receiveShadow = true;
-                } else {
+                } 
+                else {
                     // Disable shadows for 3D models (.fbx, .obj files)
                     child.castShadow = false;
                     child.receiveShadow = false;
@@ -158,8 +160,10 @@ export class ShadowManager {
             }
         });
     }
-    
-    // Method to update shadow settings for newly added objects
+
+    // Method to update shadow settings for objects
+    //this method is called on the mesh. loaded file do not call directly this beacuse first you have to obtain the mesh so is called first processLoadedObject
+    /// (barrel, shuriken, trapdoor are not loaded model so  call this function directly
     updateObjectShadows(object) {
         if (!object.isMesh) return;
         
@@ -216,10 +220,12 @@ export class ShadowManager {
         }
     }
     
-    // Method to be called when loading new objects
+    // Method to be called when loading new objects (fbx obj etc..)
+    //it's a double check to ensure that the shadow settings are applied to the meshes of the loaded objects
+    // in case the function called by the button [setShadowMode] is not called
     processLoadedObject(object) {
         object.traverse((child) => {
-            if (child.isMesh) {
+            if (child.isMesh) { //of course the shadow projected is the one of the mesh of the object
                 this.updateObjectShadows(child);
             }
         });

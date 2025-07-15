@@ -10,24 +10,21 @@ export class Shuriken {
         this.shadowManager = shadowManager;             // Reference to shadow manager for shadow handling
 
         // Movement properties
-        this.speed = 5.5;                // Units per second 
+        this.speed = 5.5;               // Units per second 
         this.rotationSpeed = 8.0;       // Rotation speed for spinning effect (Z-axis)
-        this.rotationSpeedX = 4.0;      // Additional rotation around X-axis
-        this.rotationSpeedY = 6.0;      // Additional rotation around Y-axis
+        this.rotationSpeedX = 4.0;      // rotation around X-axis
+        this.rotationSpeedY = 6.0;      // rotation around Y-axis
         this.heightOffset = 1.5;        // Height above platform
-        this.bobAmplitude = 0.3;        // Vertical bobbing amplitude
-        this.bobFrequency = 3.0;        // Vertical bobbing frequency
         this.time = 0;                  // Time accumulator for animations
         
         // Path properties
         this.pathPoints = []; // Array to hold ALL THE path points
         this.currentPathIndex = startingPathIndex; // Start from specified index
-        this.pathProgress = 0; // 0 to 1 between current and next point
-        this.smoothingFactor = 0.2; // For smooth corner transitions
+        this.pathProgress = 0; // 0 to 1 between current and next point of the shuriken path
         
         // Collision properties
-        this.collisionRadius = 0.8;
-        this.lastCollisionTime = 0;
+        this.collisionRadius = 0.85;
+        this.lastCollisionTime = 0;    // prevent multiple hits
         this.collisionCooldown = 1000; // 1 second cooldown
 
         this.createShuriken();
@@ -42,14 +39,21 @@ export class Shuriken {
         const points = 5; //5 spikes
         const holeRadius = 0.08; // Center hole radius
 
-        // This loop generates the points for a shuriken (star-shaped) polygon.
-        // It alternates between outer and inner radii to create the "spikes" of the shuriken.
+        // Points for a shuriken (star-shaped) polygon.
+        // It alternates between outer and inner radii to create spikes
+        // ten times iteration
         for (let i = 0; i < points * 2; i++) {
             // Calculate the angle for the current point (even indices = outer, odd = inner)
-            const angle = (i / (points * 2)) * Math.PI * 2;
+            const angle = (i / (points * 2)) * (2 * Math.PI);
+            // points are spread evenly on 360 degree
 
             // Alternate between outer and inner radius for each point
-            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            let radius;
+            if (i % 2 === 0) {
+                radius = outerRadius;
+            } else {
+                radius = innerRadius;
+            }
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
 
@@ -57,7 +61,7 @@ export class Shuriken {
                 // Move to the first point without drawing a line (start of the shape)
                 shape.moveTo(x, y);
             } 
-            else {
+            else { //after the first point draw all the line
                 // Draw a line to the next point, forming the star's edges
                 shape.lineTo(x, y);
             }
@@ -105,7 +109,6 @@ export class Shuriken {
         // Set up shadow properties using ShadowManager
         this.updateShadowSettings();
 
-        // Add to scene
         this.scene.add(this.mesh);
     }
 
@@ -174,7 +177,7 @@ export class Shuriken {
         const nextIndex = (this.currentPathIndex + 1) % this.pathPoints.length;
         const nextPoint = this.pathPoints[nextIndex];
         
-        // Calculate distance between current and next point
+        // Calculate distance between current and next point in the current frame
         const segmentDistance = currentPoint.distanceTo(nextPoint);
         
         // Calculate how much progress we make on this segment
@@ -187,35 +190,14 @@ export class Shuriken {
         if (this.pathProgress >= 1.0) {
             // Move to next segment
             this.currentPathIndex = nextIndex;
-            this.pathProgress = this.pathProgress - 1.0; // Carry over excess progress
+            this.pathProgress = this.pathProgress - 1.0; // bring it to 0 for the next segment
         }
-        
-        // Smooth interpolation with bezier-like curve for corners
+                
+        // Linear interpolation between current and next path point
         const currentSegmentStart = this.pathPoints[this.currentPathIndex];
-        const currentSegmentEnd = this.pathPoints[(this.currentPathIndex + 1) % this.pathPoints.length];
-        
-        // Apply smooth curve interpolation near corners
+        const currentSegmentEnd = this.pathPoints[nextIndex];
         let t = this.pathProgress;
-        
-        // Smooth the transition using ease-in-out function
-        if (t < this.smoothingFactor) {
-            // Ease in at the start of segment
-            t = this.smoothEaseInOut(t / this.smoothingFactor) * this.smoothingFactor;
-        }
-        else if (t > 1.0 - this.smoothingFactor) {
-            // Ease out at the end of segment
-            const localT = (t - (1.0 - this.smoothingFactor)) / this.smoothingFactor;
-            t = (1.0 - this.smoothingFactor) + this.smoothEaseInOut(localT) * this.smoothingFactor;
-        }
         this.mesh.position.lerpVectors(currentSegmentStart, currentSegmentEnd, t);
-    }
-
-    // Smooth easing function for corner transitions
-    // This helps the shuriken transition smoothly at corners.
-    smoothEaseInOut(t) {
-        // The smoothstep function creates a gentle acceleration and deceleration.
-        // For t in [0, 1]: returns 0 at t=0, 0.5 at t=0.5, and 1 at t=1.
-        return t * t * (3 - 2 * t);
     }
     
     updateRotations(deltaTime) {
@@ -248,7 +230,7 @@ export class Shuriken {
         if (distance < this.collisionRadius) {
             this.lastCollisionTime = currentTime;
             
-            console.log(`Shuriken hit player! Distance: ${distance.toFixed(2)}`);
+            console.log(`[Shuriken] hit player! Distance: ${distance.toFixed(2)}`);
             
             // Call player death method
             if (this.player && typeof this.player.playerDied === 'function') {

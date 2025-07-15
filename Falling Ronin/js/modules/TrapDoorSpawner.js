@@ -24,7 +24,7 @@ export class TrapDoorSpawner {
         this.setOrientationConfig();
         
         // Spawn frequency configuration
-        this.spawnFrequency = spawnFrequency; // Time between spawns in seconds (default: 3.0 for Map1 compatibility)
+        this.spawnFrequency = spawnFrequency; // Time between spawns in seconds (default: 3.0 for Map1)
         // Bounciness and friction for barrels
         this.bounciness = bounciness;
         this.friction = friction;
@@ -51,7 +51,7 @@ export class TrapDoorSpawner {
         this.createWarningLight();
         
         // Initialize cooldown state
-        this.animationState = 'cooldown';
+        this.animationState = 'cooldown'; //
         this.animationTimer = 0;
     }
     
@@ -108,11 +108,6 @@ export class TrapDoorSpawner {
         this.frame.position.copy(this.position);
         this.frame.position.y += 0.05; // Slightly above the platform
 
-        // shadow settings are not needed for the base of the trap door frame
-        // if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-        //     window.game.gameState.getShadowManager().updateObjectShadows(this.frame);
-        // }
-        
         this.scene.add(this.frame);
         
         // Create the black interior surface (the hole where barrels come from)
@@ -125,11 +120,6 @@ export class TrapDoorSpawner {
         this.interior = new THREE.Mesh(interiorGeometry, interiorMaterial);
         this.interior.position.copy(this.position);
         this.interior.position.y += 0.02; // Just below the frame
-
-        // shadow settings are not needed for the base of the trap door frame
-        // if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-        //     window.game.gameState.getShadowManager().updateObjectShadows(this.interior);
-        // }
 
         this.scene.add(this.interior);
         
@@ -155,12 +145,6 @@ export class TrapDoorSpawner {
         
         this.hinge1 = new THREE.Mesh(hingeGeometry, hingeMaterial);
         this.hinge2 = new THREE.Mesh(hingeGeometry, hingeMaterial);
-        
-        // No need to Apply shadow settings to hinges
-        // if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-        //     window.game.gameState.getShadowManager().updateObjectShadows(this.hinge1);
-        //     window.game.gameState.getShadowManager().updateObjectShadows(this.hinge2);
-        // }
         
         // Position hinges at the hinge edge based on orientation
         if (this.config.rotationAxis === 'z') {
@@ -289,10 +273,6 @@ export class TrapDoorSpawner {
         this.warningLight.position.copy(this.position);
         this.warningLight.position.y += 0.5;
 
-        // NO need to Apply shadow settings to the warning light
-        // if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-        //     window.game.gameState.getShadowManager().updateObjectShadows(this.warningLight);
-        // }
         this.scene.add(this.warningLight);
         
         // Add a point light for the warning effect
@@ -554,7 +534,7 @@ export class TrapDoorSpawner {
     setSpawnFrequency(frequency) {
         if (frequency <= 0) {
             console.warn('Spawn frequency must be positive. Using default value of 3.0 seconds.');
-            frequency = 3.0;
+            frequency = 3.0; //default value
         }
         
         this.spawnFrequency = frequency;

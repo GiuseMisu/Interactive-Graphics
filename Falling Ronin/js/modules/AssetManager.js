@@ -39,19 +39,7 @@ export class AssetManager {
             }, 0);
             return cachedTexture;
         }
-        
-        // Handle known missing textures
-        // never displayed in the console
-        /* if (url.includes('Bark for tree.jpg')) {
-            console.warn(`⚠️ Known missing texture: ${url}, using fallback texture`);
-            const fallbackTexture = this.createFallbackTexture();
-            this.textureCache.set(url, fallbackTexture);
-            setTimeout(() => {
-                if (onLoad) onLoad(fallbackTexture);
-            }, 0);
-            return fallbackTexture;
-        } */
-        
+                
         // Load texture if NOT cached
         const texture = this.textureLoader.load( //function of the THREE.TextureLoader
             url,
@@ -64,47 +52,12 @@ export class AssetManager {
             (error) => {
                 // Create a fallback texture for missing textures
                 console.warn(`--> Texture not found: ${url}, in loadTexture of Assetmanager.js`);
-                /* const fallbackTexture = this.createFallbackTexture();
-                this.textureCache.set(url, fallbackTexture);
-                if (onLoad) onLoad(fallbackTexture); */
-                // Don't call onError to prevent loading manager from failing
             }
         );
         
         return texture;
     }
     
-    // Create a simple fallback texture
-/*     createFallbackTexture() {
-        console.log(`===============================`);
-        console.log(`===Creating fallback texture===`);
-        console.log(`===============================`);
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        const context = canvas.getContext('2d');
-        
-        // Create a simple brown bark-like texture
-        context.fillStyle = '#8B4513'; // Brown color
-        context.fillRect(0, 0, 256, 256);
-        
-        // Add some texture lines
-        context.strokeStyle = '#654321';
-        context.lineWidth = 2;
-        for (let i = 0; i < 10; i++) {
-            context.beginPath();
-            context.moveTo(0, i * 25);
-            context.lineTo(256, i * 25 + Math.random() * 10);
-            context.stroke();
-        }
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        return texture;
-    }
-     */
-
     // Load OBJ model --> called in the specific class that needs the model (es goalPlatform and Player)
     loadOBJ(url, onLoad, onProgress, onError) {
         // Check cache first
@@ -175,20 +128,7 @@ export class AssetManager {
             }
         );
     }
-    
-    // Get loaders (for direct use if needed)
-/*     getTextureLoader() {
-        return this.textureLoader;
-    }
-    
-    getOBJLoader() {
-        return this.objLoader;
-    }
-    
-    getFBXLoader() {
-        return this.fbxLoader;
-    } */
-    
+        
     // Clear cache
     //method called in the MapManager when the map is changed
     clearCache() {

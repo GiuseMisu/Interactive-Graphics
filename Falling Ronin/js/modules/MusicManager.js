@@ -23,7 +23,7 @@ export class MusicManager {
             document.removeEventListener('click', enableAudio);
             document.removeEventListener('keydown', enableAudio);
         };
-        
+        // Add event listeners for user interaction
         document.addEventListener('click', enableAudio);
         document.addEventListener('keydown', enableAudio);
     }
@@ -70,21 +70,11 @@ export class MusicManager {
         });
     }
 
-    fullStop() {
-        // Complete stop that resets playing state
-        this.isPlaying = false;
-        this.audioElements.forEach(audio => {
-            audio.pause();
-            audio.currentTime = 0;
-        });
-    }
-
     toggle() {
         if (!this.hasUserInteracted) {
             // Wait for user interaction first
             return this.isEnabled;
         }
-        
         this.isEnabled = !this.isEnabled;
         
         if (this.isEnabled) {
@@ -134,19 +124,8 @@ export class MusicManager {
         });
     }
 
-    getVolume() {
-        return this.volume;
-    }
-
     getMusicEnabled() {
         return this.isEnabled;
     }
 
-    getCurrentTrackName() {
-        if (this.currentTrackIndex < this.tracks.length) {
-            const trackPath = this.tracks[this.currentTrackIndex];
-            return trackPath.split('/').pop().replace('.mp3', '');
-        }
-        return 'Unknown';
-    }
 }
