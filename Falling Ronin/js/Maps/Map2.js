@@ -13,7 +13,7 @@ export class Map2 {
         this.scene = scene;
         this.gameState = gameState;
         this.assetManager = assetManager;
-        this.shadowManager = gameState ? gameState.shadowManager : null;
+        //this.shadowManager = gameState ? gameState.shadowManager : null;
         this.platforms = [];
         this.barrels = [];
         this.shurikens = [];
@@ -85,12 +85,8 @@ export class Map2 {
     }
 
     createShuriken(platformIndex) {
-        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, this.shadowManager, platformIndex);
-    }
-
-    // Method to update shadow settings for all shurikens
-    updateShurikenShadows() {
-        MapTools.updateShurikenShadows(this.shurikens);
+        //MapTools.createShuriken(this.scene, this.platforms, this.shurikens, this.shadowManager, platformIndex);
+        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
     }
 
     update(deltaTime, player = null) {

@@ -26,6 +26,13 @@ export class InputManager {
             return;
         }
         
+        // Prevent input if level is completed
+        if (this.gameState && this.gameState.isLevelCompleted()) {
+            //set all keys to false
+            this.keys = { w: false, a: false, s: false, d: false };
+            return;
+        }
+
         const key = event.key.toLowerCase();
         
         // Movement keys
@@ -69,7 +76,12 @@ export class InputManager {
         if (window.loadingManager && window.loadingManager.getIsLoading()) {
             return;
         }
-        
+        // Prevent input if level is completed
+        if (this.gameState && this.gameState.isLevelCompleted()) {
+            //set all keys to false
+            this.keys = { w: false, a: false, s: false, d: false };
+            return;
+        }
         const key = event.key.toLowerCase();
         
         // if keys are released, set them to false

@@ -148,7 +148,7 @@ function animate() {
     requestAnimationFrame(animate); //do not remove
 
     // Update game state
-    const deltaTime = 1/60; // time step
+    const deltaTime = 1/60; // time step -> 60 frames per second = each frame takes 1/60th of a second
     
     // Update day-night cycle
     dayNightCycle.update(deltaTime);

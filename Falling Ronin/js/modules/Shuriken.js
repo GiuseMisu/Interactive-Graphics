@@ -1,14 +1,13 @@
 import * as THREE from 'three';
 
 export class Shuriken {
-    constructor(scene, platformPosition, platformSize, startingPathIndex = 0, shadowManager = null) {
+    constructor(scene, platformPosition, platformSize, startingPathIndex = 0){
 
         this.scene = scene;                             // Reference to the scene
         this.platformPosition = platformPosition;       // Position of the platform where shuriken will move
         this.platformSize = platformSize;               // Size of the platform NEEDED TO CALCULATE PATH
         this.player = null;                             // Reference to player for collision
-        this.shadowManager = shadowManager;             // Reference to shadow manager for shadow handling
-
+       
         // Movement properties
         this.speed = 5.5;               // Units per second 
         this.rotationSpeed = 8.0;       // Rotation speed for spinning effect (Z-axis)
@@ -106,8 +105,14 @@ export class Shuriken {
         this.mesh = mesh;
         this.baseMaterial = faceMaterial; 
 
-        // Set up shadow properties using ShadowManager
-        this.updateShadowSettings();
+        //handle the shadow settings
+        if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
+            window.game.gameState.getShadowManager().updateObjectShadows(this.mesh);
+        } else {
+            // Default shadow settings
+            this.mesh.castShadow = true;
+            this.mesh.receiveShadow = true;
+        }
 
         this.scene.add(this.mesh);
     }
@@ -122,23 +127,24 @@ export class Shuriken {
         const margin = 1.2; 
         const pathY = y + this.heightOffset; // offset to make it floating
         
-        // Create rectangular path points, STARTING FROM THE CENTER ADD THE WIDTH AND DEPTH OF THE PLATFORM AND REMOVE THE MARGIN
+        // Create rectangular path points, not directly on the border but slightly offset inside
+        //STARTING FROM THE CENTER ADD THE WIDTH AND DEPTH OF THE PLATFORM AND REMOVE THE MARGIN
         this.pathPoints = [
             // Front edge
-            new THREE.Vector3(x + width/2 - margin, pathY, z + depth/2 - margin/2), // Front-right approach
-            new THREE.Vector3(x + width/2 - margin, pathY, z - depth/2 + margin/2), // Front-left approach
-            
+            new THREE.Vector3(x + width/2 - margin, pathY, z + depth/2 - margin/2), // Front-right part
+            new THREE.Vector3(x + width/2 - margin, pathY, z - depth/2 + margin/2), // Front-left part
+
             // Right edge
-            new THREE.Vector3(x + width/2 - margin/2, pathY, z - depth/2 + margin), // Back-right approach
-            new THREE.Vector3(x - width/2 + margin/2, pathY, z - depth/2 + margin), // Back-left approach
-            
+            new THREE.Vector3(x + width/2 - margin/2, pathY, z - depth/2 + margin), // Back-right part
+            new THREE.Vector3(x - width/2 + margin/2, pathY, z - depth/2 + margin), // Back-left part
+
             // Back edge
-            new THREE.Vector3(x - width/2 + margin, pathY, z - depth/2 + margin/2), // Back-left approach
-            new THREE.Vector3(x - width/2 + margin, pathY, z + depth/2 - margin/2), // Back-right approach
-            
+            new THREE.Vector3(x - width/2 + margin, pathY, z - depth/2 + margin/2), // Back-left part
+            new THREE.Vector3(x - width/2 + margin, pathY, z + depth/2 - margin/2), // Back-right part
+
             // Left edge
-            new THREE.Vector3(x - width/2 + margin/2, pathY, z + depth/2 - margin), // Front-left approach
-            new THREE.Vector3(x + width/2 - margin/2, pathY, z + depth/2 - margin), // Front-right approach
+            new THREE.Vector3(x - width/2 + margin/2, pathY, z + depth/2 - margin), // Front-left part
+            new THREE.Vector3(x + width/2 - margin/2, pathY, z + depth/2 - margin), // Front-right part
         ];
         
         // Set initial position based on starting path index
@@ -147,6 +153,7 @@ export class Shuriken {
     
     // ============================================== UPDATE METHODS ============================================
     //FUNCTION CALLED EVERY FRAME TO UPDATE SHURIKEN POSITION, ROTATION AND COLLISION
+    // -> called inside mapTools updateShurikens called inside the map update loop
     update(deltaTime, player = null) {
 
         this.player = player; //take the current player reference to be always updated to check collision
@@ -159,10 +166,7 @@ export class Shuriken {
         this.updateRotations(deltaTime);
                 
         // Check collision with player
-        if (player) {
-            this.checkPlayerCollision();
-        }
-
+        this.checkPlayerCollision();
     }
     
     updateMovement(deltaTime) {
@@ -207,6 +211,9 @@ export class Shuriken {
         // Secondary rotation animations for more dynamic effect
         this.mesh.rotation.x += this.rotationSpeedX * deltaTime;
         this.mesh.rotation.y += this.rotationSpeedY * deltaTime;
+
+        //insert a console log to check the rotation
+        console.log(`Shuriken rotation - X: ${this.mesh.rotation.x.toFixed(2)},\n Y: ${this.mesh.rotation.y.toFixed(2)},\n Z: ${this.mesh.rotation.z.toFixed(2)}`);
     }
     
     
@@ -228,37 +235,14 @@ export class Shuriken {
         
         // Check collision
         if (distance < this.collisionRadius) {
-            this.lastCollisionTime = currentTime;
-            
+            this.lastCollisionTime = currentTime;            
             console.log(`[Shuriken] hit player! Distance: ${distance.toFixed(2)}`);
             
             // Call player death method
-            if (this.player && typeof this.player.playerDied === 'function') {
+            if (this.player) {
                 this.player.playerDied('shuriken hit');
             }
         }
-    }
-
-    // ============================================== SHADOW METHODS ============================================
-
-    // Method to update shadow settings based on ShadowManager
-    updateShadowSettings() {
-        if (!this.mesh) return;
-        
-        if (this.shadowManager) {
-            // Use ShadowManager to determine shadow settings
-            this.shadowManager.updateObjectShadows(this.mesh);
-        } 
-        else {
-            // Fallback: disable shadows if no ShadowManager
-            this.mesh.castShadow = false;
-            this.mesh.receiveShadow = false;
-        }
-    }
-    
-    // Method to be called when shadow mode changes
-    onShadowModeChanged() {
-        this.updateShadowSettings();
     }
 
     // Cleanup method

@@ -131,6 +131,7 @@ export class AssetManager {
         
     // Clear cache
     //method called in the MapManager when the map is changed
+    //cache purpose is to avoid loading the same asset multiple times in the same MAP
     clearCache() {
         this.textureCache.clear();
         this.modelCache.clear();

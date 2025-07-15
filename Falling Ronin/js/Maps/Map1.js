@@ -13,7 +13,7 @@ export class Map1 {
         this.scene = scene;
         this.gameState = gameState; // Reference to game state for checkpoint system
         this.assetManager = assetManager; // Reference to asset manager
-        this.shadowManager = gameState ? gameState.shadowManager : null; // Get shadowManager from gameState
+        //this.shadowManager = gameState ? gameState.shadowManager : null; // Get shadowManager from gameState
         this.platforms = [];
         this.barrels = [];
         this.shurikens = [];
@@ -26,7 +26,6 @@ export class Map1 {
     }    
     
     createMap() {
-        
         // Starting platform
         this.addPlatform(0, 0, 0, 12, 8, false, 'Main Platform'); 
         
@@ -81,8 +80,8 @@ export class Map1 {
 
     spawnBarrel() {
         // This method is now called by the trap door spawner
-        if (this.trapDoorSpawner) {
-            const barrel = this.trapDoorSpawner.spawnBarrel();
+        if (this.trapDoorSpawners.length > 0) {
+            const barrel = this.trapDoorSpawners[0].spawnBarrel(); //just one in this map
             if (barrel) {
                 this.barrels.push(barrel);
             }
@@ -90,12 +89,7 @@ export class Map1 {
     }
     
     createShuriken(platformIndex) {
-        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, this.shadowManager, platformIndex);
-    }
-
-    // update shadow settings for all shurikens when shadow mode changes
-    updateShurikenShadows() {
-        MapTools.updateShurikenShadows(this.shurikens);
+        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
     }
 
     update(deltaTime, player = null) {

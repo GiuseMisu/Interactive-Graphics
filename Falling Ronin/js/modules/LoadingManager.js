@@ -11,9 +11,7 @@ export class LoadingManager {
 
         // Callbacks for loading events
         // can be retrieved from the outside to understand the progress state of the loading process
-        //this.onProgressCallback = null;
         this.onCompleteCallback = null;
-        //this.onStartCallback = null;
         
         // Create Three.js LoadingManager
         // used to track the loading of assets in the scene and provide progress updates.
@@ -31,11 +29,7 @@ export class LoadingManager {
             this.loadedItems = itemsLoaded;
             this.loadingProgress = itemsLoaded / itemsTotal; // Calculate progress
             console.log(`+++Loading started: ${itemsLoaded}/${itemsTotal}+++`);
-            
-            /* if (this.onStartCallback) {
-                this.onStartCallback();
-            } */
-            
+                        
             this.showLoadingScreen();
             this.updateLoadingScreen(); // Update UI with current progress
         };
@@ -45,14 +39,7 @@ export class LoadingManager {
             this.loadedItems = itemsLoaded;
             this.totalItems = itemsTotal;
             this.loadingProgress = itemsLoaded / itemsTotal;
-            
-            // reduce log spam 
-            //console.log(`Loading progress: ${itemsLoaded}/${itemsTotal} (${Math.round(this.loadingProgress * 100)}%)`);
-            
-            /* if (this.onProgressCallback) {
-                this.onProgressCallback(this.loadingProgress, itemsLoaded, itemsTotal);
-            } */
-            
+                        
             this.updateLoadingScreen();
         };
 

@@ -27,7 +27,7 @@ export class MapManager {
             selectionScreen.style.display = 'none';
         }
         // Reset player position with proper feet positioning
-        if (this.player && this.player.model && typeof this.player.respawnPlayer === 'function') {
+        if (this.player && this.player.model) {
             this.player.respawnPlayer();
         }       
         
@@ -52,7 +52,7 @@ export class MapManager {
 
     // Method to get all platforms from the current map
     getAllPlatforms() {
-        if (this.currentMap && typeof this.currentMap.getAllPlatforms === 'function') {
+        if (this.currentMap) {
             return this.currentMap.getAllPlatforms();
         }
         return [];
@@ -67,7 +67,7 @@ export class MapManager {
 
     update(deltaTime) {
         // Update the current map if it has an update method
-        if (this.currentMap && typeof this.currentMap.update === 'function') {
+        if (this.currentMap) {
             this.currentMap.update(deltaTime, this.player);
         }
     }
@@ -106,7 +106,7 @@ export class MapManager {
         }
         
         // Reset player position
-        if (this.player && typeof this.player.respawnPlayer === 'function') {
+        if (this.player) {
             this.player.respawnPlayer();
         }
     }

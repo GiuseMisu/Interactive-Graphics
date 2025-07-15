@@ -64,7 +64,7 @@ export class TimedPlatform extends BasePlatform {
     }
 
     // Check collision and activate timer if needed
-    checkCollision(player) {
+    checkPlayerOnTimedPlatform(player) {
         if (!player || !player.model) return false;
 
         const playerFeet = player.getPlayerFeetPosition();
@@ -74,7 +74,10 @@ export class TimedPlatform extends BasePlatform {
         if (isOnPlatform && Math.abs(playerFeet.y - platformTop) < 0.1) {
             // Player stepped on timed platform
             if (this.timerState === 'inactive') {
-                this.activateTimer();
+                //timer started
+                this.timerState = 'active';
+                this.timeRemaining = 1.0;
+                console.log(`TIMER STARTED: Platform "${this.platformName}" - 1.0 seconds countdown!`);
             }
             this.playerOnPlatform = true;
             return true;
@@ -82,13 +85,6 @@ export class TimedPlatform extends BasePlatform {
             this.playerOnPlatform = false;
             return false;
         }
-    }
-
-    // Activate the countdown timer
-    activateTimer() {
-        this.timerState = 'active';
-        this.timeRemaining = 1.0;
-        console.log(`TIMER STARTED: Platform "${this.platformName}" - 1.0 seconds countdown!`);
     }
 
     // Update the timed platform
@@ -118,13 +114,13 @@ export class TimedPlatform extends BasePlatform {
             }
         } 
         else if (this.timerState === 'disappearing') {
-            // Animate disappearing
-            this.animationProgress += deltaTime * 2; // 2 seconds to disappear
+            // Animate disappearing, original was * 2
+            this.animationProgress += deltaTime * 3; //the higher the less the scaling down last
 
             if (this.animationProgress >= 1.0) {
                 // Platform has disappeared
                 this.timerState = 'disappeared';
-                this.mesh.visible = false;
+                this.mesh.visible = false; //--> you cannot interact with the platform anymore
                 console.log(`Platform "${this.platformName}" has disappeared!`);
             }
             else {

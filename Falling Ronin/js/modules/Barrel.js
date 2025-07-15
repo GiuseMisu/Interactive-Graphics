@@ -232,7 +232,7 @@ export class Barrel {
         
         // ADDED: Directly inform the player about the collision
         // This ensures the death counter works even when player is stationary
-        if (this.player && typeof this.player.playerDied === 'function') {
+        if (this.player) {
             const currentTime = Date.now();
             // Use the same cooldown logic as in the Player class
             // to prevent immediate respawn after collision

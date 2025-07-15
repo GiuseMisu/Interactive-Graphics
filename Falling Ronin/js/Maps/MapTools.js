@@ -61,7 +61,7 @@ export class MapTools {
             if (platform.timerState === 'disappeared' || !platform.mesh.visible) {
                 continue;
             }
-            const isOnPlatform = platform.checkCollision(player);
+            const isOnPlatform = platform.checkPlayerOnTimedPlatform(player);
             if (isOnPlatform) {
                 return platform;
             }
@@ -95,7 +95,7 @@ export class MapTools {
     // ======================= SHURIKEN LOGIC =======================
 
     // Create shuriken helper function - shared between both maps
-    static createShuriken(scene, platforms, shurikens, shadowManager, platformIndex) {
+    static createShuriken(scene, platforms, shurikens, platformIndex) {
         // Check if platform exists
         if (platformIndex >= platforms.length) {
             console.error(`Platform ${platformIndex} does not exist!`);
@@ -112,18 +112,10 @@ export class MapTools {
             depth: platform.mesh.geometry.parameters.depth
         };
         console.log(`Creating shurikens for platform ${platformIndex}: ${platform.userData.platformName}`);
-        // Create single shuriken (clockwise, starting at index 0)
-        const shuriken1 = new Shuriken(scene, platformPosition, platformSize, 0, shadowManager);
+        
+        // Create single shuriken
+        const shuriken1 = new Shuriken(scene, platformPosition, platformSize, 0)
         shurikens.push(shuriken1);
-    }
-
-    // Method to update shadow settings for all shurikens when shadow mode changes
-    static updateShurikenShadows(shurikens) {
-        for (const shuriken of shurikens) {
-            if (shuriken.onShadowModeChanged) {
-                shuriken.onShadowModeChanged();
-            }
-        }
     }
 
     // Common shuriken update logic

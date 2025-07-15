@@ -36,7 +36,6 @@ export class Player {
         this.goalStayRequired = 0.2; // Seconds required to activate goal
 
         // Barrel collision properties
-        /* this.barrelManager = null; */ // Will be set by the map manager
         this.lastBarrelCollisionTime = 0; // Prevent spam collision detection
         this.lastSpacePress = 0; // Already present, can be used for double tap if needed, though current jump logic handles it
         this.jumpStartTime = 0; // Added for jump animation timing if needed
@@ -105,10 +104,8 @@ export class Player {
                 window.cameraController.target = this.model;
             }
             // Model loaded successfully
-            // --- FIX: Snap to correct position after model is loaded ---
-            if (typeof this.respawnPlayer === 'function') {
-                this.respawnPlayer();
-            }
+            this.respawnPlayer();
+            
         };
         
         if (this.assetManager) {
@@ -277,10 +274,6 @@ export class Player {
             if (this.checkWallCollision() || this.checkImportedModelCollision()) {
                 this.model.position.x = originalX; // Rollback X movement for walls or imported models
             } 
-            
-            /* else if (this.checkBarrelCollision()) {
-                this.model.position.x = originalX; // Rollback X movement for barrels too, let main check handle death
-            } */
 
             // Try Z movement
             this.model.position.z += moveZ;
@@ -460,7 +453,6 @@ export class Player {
                 }
             }
         }
-        
         // Reset timer if not on any checkpoint platform
         if (!onCheckpointPlatform) {
             this.checkpointStayTimer = 0;
@@ -545,11 +537,9 @@ export class Player {
 
                 // Reset timed platforms when respawning --> FUNCTION OF MAPTOOLS that calls reset() of TimedPlatform
                 this.resetTimedPlatforms();
-                
                 return;
             }
         }
-        
         // No checkpoint, respawn at main platform
         this.respawnAtMainPlatform();
     }
@@ -611,15 +601,10 @@ export class Player {
         }
     }
     
-            
     //====================== MANAGERS & STATE ======================
     setPlatformManager(platformManager) {
         this.platformManager = platformManager;
     }
-
-    /* setBarrelManager(barrelManager) {
-        this.barrelManager = barrelManager;
-    } */
     
     setGameState(gameState) {
         this.gameState = gameState;
@@ -691,7 +676,7 @@ export class Player {
 
         // 2. LEG ANIMATION
         const legSwingAmplitude = 0.65;
-        // Calculate the current swing for each leg
+        // swing for each leg
         const leftLegSwing = Math.sin(t * animSpeed) * legSwingAmplitude;
         const rightLegSwing = Math.sin(t * animSpeed + Math.PI) * legSwingAmplitude;
 
@@ -853,22 +838,6 @@ export class Player {
         }
     }
 
-/*  function used when character is not jumping nor walking or running
-    it just returns the character bones to their initial pose and they remain there 
-    animateIdle() {
-        // Smoothly return bones to their (newly defined) initial pose
-        const lerpFactor = 0.1; // Adjust for speed of transition
-        for (const boneKey in this.bones) {
-            const bone = this.bones[boneKey];
-            const initialRotation = this.boneInitialRotations[boneKey];
-            if (bone && initialRotation) {
-                bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRotation.x, lerpFactor);
-                bone.rotation.y = THREE.MathUtils.lerp(bone.rotation.y, initialRotation.y, lerpFactor);
-                bone.rotation.z = THREE.MathUtils.lerp(bone.rotation.z, initialRotation.z, lerpFactor);
-            }
-        }
-    }  */   
-    
     // Looking around animation when he's standing still
     animateIdle() {
         const lerpFactor = 0.1;
@@ -1302,13 +1271,9 @@ export class Player {
         
         console.log(`Player died from: ${cause}`);
         
-        // Update death counter if UI is available
-        if (this.gameUI && typeof this.gameUI.updateDeathCounter === 'function') {
+        // Update death counter and show death message
+        if (this.gameUI) {
             this.gameUI.updateDeathCounter();
-        }
-        
-        // Show death message
-        if (this.gameUI && typeof this.gameUI.showDeathMessage === 'function') {
             this.gameUI.showDeathMessage(cause);
         }
         

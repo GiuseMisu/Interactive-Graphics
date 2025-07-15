@@ -30,7 +30,7 @@ export class TrapDoorSpawner {
         this.friction = friction;
         
         // Animation states
-        this.animationState = 'closed'; // 'closed', 'opening', 'open', 'closing', 'cooldown'
+        this.animationState = 'cooldown'; // 'warning' 'opening' 'open' 'closing'
         this.animationTimer = 0;
         this.animationDuration = 0.8; // Door opening/closing duration
         this.cooldownDuration = this.spawnFrequency; // Time between spawns (now configurable)
@@ -49,10 +49,6 @@ export class TrapDoorSpawner {
         // Create the trap door components
         this.createTrapDoor();
         this.createWarningLight();
-        
-        // Initialize cooldown state
-        this.animationState = 'cooldown'; //
-        this.animationTimer = 0;
     }
     
     setOrientationConfig() {
@@ -312,7 +308,7 @@ export class TrapDoorSpawner {
     }
     
     startWarning() {
-        this.animationState = 'warning';
+        this.animationState = 'warning'; //this will switch to the next step of animation
         this.animationTimer = 0;
         this.preSpawnWarning = true;
         this.warningTimer = 0;
@@ -343,10 +339,9 @@ export class TrapDoorSpawner {
     
     updateOpening(deltaTime) {
         const progress = Math.min(this.animationTimer / this.animationDuration, 1.0);
-        const easeProgress = this.easeInOutQuad(progress);
-        
+
         // Rotate door based on orientation configuration
-        this.doorRotation = easeProgress * this.maxDoorRotation * this.config.rotationDirection;
+        this.doorRotation = progress * this.maxDoorRotation * this.config.rotationDirection;
         
         if (this.config.rotationAxis === 'z') {
             this.doorGroup.rotation.z = this.doorRotation;
@@ -379,10 +374,9 @@ export class TrapDoorSpawner {
     
     updateClosing(deltaTime) {
         const progress = Math.min(this.animationTimer / this.animationDuration, 1.0);
-        const easeProgress = this.easeInOutQuad(progress);
-        
+
         // Rotate door back based on orientation configuration
-        this.doorRotation = (1.0 - easeProgress) * this.maxDoorRotation * this.config.rotationDirection;
+        this.doorRotation = (1.0 - progress) * this.maxDoorRotation * this.config.rotationDirection;
         
         if (this.config.rotationAxis === 'z') {
             this.doorGroup.rotation.z = this.doorRotation;
@@ -397,6 +391,7 @@ export class TrapDoorSpawner {
     }
     
     spawnBarrel() {
+        //here's the barrel constructor that calls the createBarrel method
         const barrel = new Barrel(this.scene);
         
         // Position barrel at the trap door with minimal randomization
@@ -453,19 +448,7 @@ export class TrapDoorSpawner {
         
         return barrel;
     }
-    
-    // function for smooth animation of the door opening and closing
-    easeInOutQuad(t) {
-        // accelerates in first half, decelerates in second half
-        if (t < 0.5) {
-            // Ease in (accelerate)
-            return 2 * t * t;
-        } else {
-            // Ease out (decelerate)
-            return 1 - Math.pow(-2 * t + 2, 2) / 2;
-        }
-    }
-    
+        
     // Get the current spawn position (for external use)
     getSpawnPosition() {
         return this.position.clone();
