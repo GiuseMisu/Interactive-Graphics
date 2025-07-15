@@ -119,7 +119,7 @@ export class Player {
                 (error) => { console.error('FBX loading error:', error); }
             );
         } 
-        else {
+        else { //if assetManager is not available
             const fbxLoader = new FBXLoader();
             fbxLoader.load(
                 'assets/models/ninja.fbx',

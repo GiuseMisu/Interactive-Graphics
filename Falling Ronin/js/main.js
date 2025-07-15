@@ -21,24 +21,37 @@ window.loadingManager = loadingManager;
 
 // Initialize scene, renderer, and camera
 const scene = new THREE.Scene();
+const player = new Player(scene, assetManager); // Pass asset manager to player
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+//============= RENDER SETUP =============
 
 // Set up renderer
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Initial camera position
-camera.position.set(0, 3, 8);
+//============== CAMERA SETUP =============
+
+//camera it is the perspective camera 3D scene from a specific viewpoint
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+camera.position.set(0, 3, 8); // Initial camera position
 
 // Orbit controls setup
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 1, 0);
+//placed to false because at the beginning the camera is fixed to the player
 controls.enablePan = false;
 controls.enableZoom = false;
 controls.enableRotate = false;
 controls.update();
+
+// Create camera controller with player reference
+window.cameraController = new CameraController(camera, 
+                                               controls,    //ORBIT CONTROLS
+                                               player.model //TARGET
+                                            );
+
 
 // Initialize day-night cycle
 const dayNightCycle = new DayNightCycle(scene, renderer);
@@ -51,11 +64,6 @@ const gameState = new GameState();
 gameState.setShadowManager(shadowManager);
 
 const inputManager = new InputManager(gameState);
-const player = new Player(scene, assetManager); // Pass asset manager to player
-
-// Create camera controller with player reference
-window.cameraController = new CameraController(camera, controls, player.model);
-//gameState.setPlayer(player); already done in the Game class constructor
 
 // Create and initialize game
 const game = new Game(scene, player, assetManager, gameState); // Pass gameState to game

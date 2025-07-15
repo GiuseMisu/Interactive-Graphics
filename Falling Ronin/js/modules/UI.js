@@ -297,6 +297,7 @@ export class UI {
         
         // Small delay to ensure loading screen is visible with fresh state
         setTimeout(() => {
+            // this is the load map method of the mapManager not the ui class
             this.mapManager.loadMap(mapName);
             
             // Hide map selection screen

@@ -2,7 +2,7 @@ export class MusicManager {
     constructor() {
         this.isEnabled = false; // Start disabled by default
         this.currentTrackIndex = 0;
-        this.volume = 0.5;
+        this.volume = 0.99; // Default volume
         this.tracks = [
             'assets/sounds/Flute_Music.mp3',
             'assets/sounds/Japanese.mp3'

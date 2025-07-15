@@ -161,7 +161,8 @@ export class RegularPlatform extends BasePlatform {
                         console.error('Error loading lamp.fbx:', error);
                     }
                 );
-            } else {
+            } 
+            else { //if assetManager is not available
                 const fbxLoader = new FBXLoader();
                 fbxLoader.load(
                     'assets/models/lamp.fbx',
@@ -252,7 +253,7 @@ export class RegularPlatform extends BasePlatform {
                     }
                 }
             );
-        } else {
+        } else { //if assetManager is not available
             const fbxLoader = new FBXLoader();
             fbxLoader.load(
                 'assets/models/Japanese_Tree.fbx',

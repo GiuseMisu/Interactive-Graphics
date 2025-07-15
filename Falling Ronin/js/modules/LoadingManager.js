@@ -3,33 +3,38 @@ import * as THREE from 'three';
 export class LoadingManager {
     constructor() {
         this.isLoading = false;
-        this.loadingProgress = 0;
+
+        // the number displayed as loading progress (0 to 1)
+        this.loadingProgress = 0;  // continously updated in the function called automaticaly by the Three.js loading manager
         this.totalItems = 0;
         this.loadedItems = 0;
 
         // Callbacks for loading events
         // can be retrieved from the outside to understand the progress state of the loading process
-        this.onProgressCallback = null;
+        //this.onProgressCallback = null;
         this.onCompleteCallback = null;
-        this.onStartCallback = null;
+        //this.onStartCallback = null;
         
         // Create Three.js LoadingManager
         // used to track the loading of assets in the scene and provide progress updates.
         // it checks the loading of assets like textures, models, etc. and tells when they are loaded.
         this.threeLoadingManager = new THREE.LoadingManager();
         
-        // Set up Three.js loading manager callbacks
-        // onStart is triggered when loading begins
+        // ==========================OVERRIDE Three.js loading manager callbacks==========================
+        //  called **automatically** by Three.js when loading starts, progresses, or completes.
+        //  overwrite the default callbacks to handle loading events
+        
+        // onStart is triggered when FIRST ASSET BEING LOADED
         this.threeLoadingManager.onStart = (url, itemsLoaded, itemsTotal) => {
-            this.isLoading = true;
+            this.isLoading = true; // Starting the load process
             this.totalItems = itemsTotal;
             this.loadedItems = itemsLoaded;
-            this.loadingProgress = itemsLoaded / itemsTotal; // Calculate initial progress
-            console.log(`Loading started: ${itemsLoaded}/${itemsTotal}`);
+            this.loadingProgress = itemsLoaded / itemsTotal; // Calculate progress
+            console.log(`+++Loading started: ${itemsLoaded}/${itemsTotal}+++`);
             
-            if (this.onStartCallback) {
+            /* if (this.onStartCallback) {
                 this.onStartCallback();
-            }
+            } */
             
             this.showLoadingScreen();
             this.updateLoadingScreen(); // Update UI with current progress
@@ -44,9 +49,9 @@ export class LoadingManager {
             // reduce log spam 
             //console.log(`Loading progress: ${itemsLoaded}/${itemsTotal} (${Math.round(this.loadingProgress * 100)}%)`);
             
-            if (this.onProgressCallback) {
+            /* if (this.onProgressCallback) {
                 this.onProgressCallback(this.loadingProgress, itemsLoaded, itemsTotal);
-            }
+            } */
             
             this.updateLoadingScreen();
         };
@@ -54,7 +59,7 @@ export class LoadingManager {
         // onLoad is triggered when all assets are loaded
         this.threeLoadingManager.onLoad = () => {
             this.isLoading = false;
-            this.loadingProgress = 1;
+            this.loadingProgress = 1; //giving that all assets are loaded set it to 1 (100%)
             console.log('All assets loaded successfully!');
             
             // Update loading screen to show 100% completion
@@ -114,13 +119,15 @@ export class LoadingManager {
             if (mapSelectionScreen) {
                 mapSelectionScreen.style.display = 'none';
             }
-            
             // Disable keyboard input
             this.disableKeyboardInput();
         }
     }
     
     hideLoadingScreen() {
+        //when is completed the loading screen is hidden
+        //infact is called by--> this.threeLoadingManager.onLoad triggered when all assets are loaded
+        
         const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
@@ -154,7 +161,10 @@ export class LoadingManager {
             assetsCounter.innerText = `${this.loadedItems} / ${this.totalItems} assets`;
         }
     }
-    
+
+
+    // ======================== KEYBOARD INPUT MANAGEMENT WHEN LOADING ==========================
+
     disableKeyboardInput() {
         // Store original keyboard event handlers
         this.originalKeydownHandler = window.onkeydown;
@@ -166,7 +176,6 @@ export class LoadingManager {
             e.stopPropagation();
             return false;
         };
-        
         window.onkeyup = (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -195,19 +204,21 @@ export class LoadingManager {
     }
     
     // Callback setters
-    setOnStartCallback(callback) {
-        this.onStartCallback = callback;
-    }
-    
-    setOnProgressCallback(callback) {
-        this.onProgressCallback = callback;
-    }
-    
+    // method used to set the callback status from outside this file
+    //setOnCompleteCallback is called in the main.js file to set the callback for when loading is complete
     setOnCompleteCallback(callback) {
         this.onCompleteCallback = callback;
     }
-    
-    // Getter for the Three.js LoadingManager
+
+    /*     NEVER CALLED 
+    setOnStartCallback(callback) {
+        this.onStartCallback = callback;
+    }
+    setOnProgressCallback(callback) {
+        this.onProgressCallback = callback;
+    } */
+
+    // Getter for the Three.js LoadingManager--> called in main.js file
     getThreeLoadingManager() {
         return this.threeLoadingManager;
     }
@@ -220,9 +231,10 @@ export class LoadingManager {
     }
     
     // Get current progress (0-1)
-    getProgress() {
-        return this.loadingProgress;
-    }
+    // never called
+    // getProgress() {
+    //     return this.loadingProgress;
+    // }
     
     // Reset the loading manager state
     reset() {
@@ -247,6 +259,7 @@ export class LoadingManager {
     
     // Force completion of loading (for when all assets are cached)
     forceComplete() {
+        // if not already loading
         if (!this.isLoading) {
             console.log('--> Forcing loading completion - all assets cached -');
             this.isLoading = true; // Set to true temporarily
@@ -277,7 +290,7 @@ export class LoadingManager {
         }
     }
     
-    // Start a fresh loading session
+    // Start a fresh loading session--> called from UI in LoadMap()
     startFreshLoading() {
         // Reset all state
         this.reset();
@@ -287,6 +300,7 @@ export class LoadingManager {
         console.log('Fresh loading session started');
     }
 
+    //========================= LOADING SCREEN UI CREATION =========================
     
     createLoadingScreen() {
         // Create loading screen container
@@ -306,7 +320,7 @@ export class LoadingManager {
         loadingScreen.style.fontFamily = '"Press Start 2P", cursive';
         loadingScreen.style.color = '#ffffff';
         
-        // Add subtle animated background pattern
+        // animated background pattern
         const backgroundPattern = document.createElement('div');
         backgroundPattern.style.position = 'absolute';
         backgroundPattern.style.top = '0';
@@ -321,7 +335,7 @@ export class LoadingManager {
         backgroundPattern.style.animation = 'backgroundPulse 4s ease-in-out infinite alternate';
         loadingScreen.appendChild(backgroundPattern);
         
-        // Create title
+        // title display
         const title = document.createElement('h1');
         title.innerText = 'FALLING RONIN';
         title.style.fontSize = '4rem';
@@ -333,7 +347,7 @@ export class LoadingManager {
         title.style.animation = 'titleGlow 2s ease-in-out infinite alternate';
         loadingScreen.appendChild(title);
         
-        // Create loading text
+        // loading text
         const loadingText = document.createElement('div');
         loadingText.id = 'loadingText';
         loadingText.innerText = 'LOADING...';
@@ -345,7 +359,7 @@ export class LoadingManager {
         loadingText.style.animation = 'loadingPulse 1.5s ease-in-out infinite';
         loadingScreen.appendChild(loadingText);
         
-        // Create progress bar container
+        // progress bar container
         const progressContainer = document.createElement('div');
         progressContainer.style.width = '400px';
         progressContainer.style.height = '20px';
@@ -357,18 +371,18 @@ export class LoadingManager {
         progressContainer.style.zIndex = '10';
         progressContainer.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.5)';
         
-        // Create progress bar
+        // progress bar
         const progressBar = document.createElement('div');
         progressBar.id = 'loadingProgressBar';
         progressBar.style.width = '0%';
         progressBar.style.height = '100%';
         progressBar.style.background = 'linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #e74c3c 100%)';
-        progressBar.style.borderRadius = '7px';
+        progressBar.style.borderRadius = '7px'; //--> rounded corners
         progressBar.style.transition = 'width 0.3s ease';
         progressBar.style.position = 'relative';
         progressBar.style.overflow = 'hidden';
         
-        // Add animated shine effect to progress bar
+        // shine effect to progress bar
         const shine = document.createElement('div');
         shine.style.position = 'absolute';
         shine.style.top = '0';
@@ -405,6 +419,7 @@ export class LoadingManager {
         loadingScreen.appendChild(assetsCounter);
         
         // Add CSS animations
+        // it let the title glow, the loading text pulse, the progress bar shine and the background pulse
         const style = document.createElement('style');
         style.textContent = `
             @keyframes titleGlow {

@@ -12,9 +12,9 @@ export class CameraController {
         
         // For smooth camera rotation
         this.cameraAngle = 0;   // Current camera angle
-        this.lerpFactor = 0.1;  // How quickly camera follows (0-1)
-        
-        // Camera mode toggle
+        this.lerpFactor = 0.1;  // How quickly camera follows the target 
+
+        // Camera mode toggle-> at the beginning is false the orbit mode
         this.orbitMode = false; 
 
         // Configure orbit controls
@@ -29,6 +29,7 @@ export class CameraController {
     }
     
     // function to toggle between orbit and third-person camera modes
+    //called in the inpu Manager Class when the P key is pressed
     toggleCameraMode() {
         this.orbitMode = !this.orbitMode;
         
@@ -36,11 +37,13 @@ export class CameraController {
             this.controls.enabled = this.orbitMode;
             
             // Configure controls based on mode
+            //placed to true because now camera not fixed on the player
             if (this.orbitMode) {
                 this.controls.enableZoom = true;
                 this.controls.enableRotate = true;
                 this.controls.update();
             } 
+            //placed to false because now camera fixed on the player
             else {
                 this.controls.enableZoom = false;
                 this.controls.enableRotate = false;
@@ -77,7 +80,7 @@ export class CameraController {
         this.cameraAngle = THREE.MathUtils.lerp(
             this.cameraAngle, 
             playerAngle, 
-            this.lerpFactor
+            this.lerpFactor // to have smooth transition
         );
         
         // Calculate camera position based on spherical coordinates

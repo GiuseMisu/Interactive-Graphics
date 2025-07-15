@@ -79,108 +79,73 @@ export class GoalPlatform extends BasePlatform {
             ];
         }
         
+        // Define common object configuration function
+        const configureLanternObject = (object, pos, idx) => {
+            object.scale.set(0.1, 0.1, 0.1);
+            // Align base to platform top (platform height is 0.5)
+            object.position.set(pos.x, y + 0.25, pos.z);
+            // Rotate to make lantern stand vertically 
+            object.rotation.x = THREE.MathUtils.degToRad(-90);
+            object.rotation.y = THREE.MathUtils.degToRad(0);
+            // Apply stone/rock material and shadow settings
+            const stoneMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            roughness: 0.85,
+            metalness: 0.15,
+            flatShading: true
+            });
+            object.traverse((child) => {
+            if (child.isMesh) {
+                child.material = stoneMaterial;
+                // Apply shadow settings based on current shadow mode
+                if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
+                const shadowMode = window.game.gameState.getShadowMode();
+                if (shadowMode === 0) { // No shadows
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                } else if (shadowMode === 1) { // All shadows
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                } else { // Platforms only - lanterns are decorative objects, no shadows
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                }
+                } else {
+                // Default: lanterns don't cast shadows
+                child.castShadow = false;
+                child.receiveShadow = false;
+                }
+            }
+            });
+            // Add bounding box for collision
+            object.userData.boundingBox = new THREE.Box3().setFromObject(object);
+            this.scene.add(object);
+            this.stoneLanterns.push(object);
+            console.log(`Loaded Lantern ${idx + 1} for goal platform ${this.platformId}`);
+        };
+
         positions.forEach((pos, idx) => {
             if (this.assetManager) {
-                this.assetManager.loadOBJ(
-                    'assets/models/Stone_Lantern_v2.obj',
-                    (object) => {
-                        object.scale.set(0.1, 0.1, 0.1);
-                        // Align base to platform top (platform height is 0.5)
-                        object.position.set(pos.x, y + 0.25, pos.z);
-                        // Rotate to make lantern stand vertically 
-                        object.rotation.x = THREE.MathUtils.degToRad(-90);
-                        object.rotation.y = THREE.MathUtils.degToRad(0);
-                        // Apply stone/rock material and shadow settings
-                        const stoneMaterial = new THREE.MeshStandardMaterial({
-                            color: 0x888888,
-                            roughness: 0.85,
-                            metalness: 0.15,
-                            flatShading: true
-                        });
-                        object.traverse((child) => {
-                            if (child.isMesh) {
-                                child.material = stoneMaterial;
-                                // Apply shadow settings based on current shadow mode
-                                if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                                    const shadowMode = window.game.gameState.getShadowMode();
-                                    if (shadowMode === 0) { // No shadows
-                                        child.castShadow = false;
-                                        child.receiveShadow = false;
-                                    } else if (shadowMode === 1) { // All shadows
-                                        child.castShadow = true;
-                                        child.receiveShadow = true;
-                                    } else { // Platforms only - lanterns are decorative objects, no shadows
-                                        child.castShadow = false;
-                                        child.receiveShadow = false;
-                                    }
-                                } else {
-                                    // Default: lanterns don't cast shadows
-                                    child.castShadow = false;
-                                    child.receiveShadow = false;
-                                }
-                            }
-                        });
-                        // Add bounding box for collision
-                        object.userData.boundingBox = new THREE.Box3().setFromObject(object);
-                        this.scene.add(object);
-                        this.stoneLanterns.push(object);
-                        console.log(`Loaded Lantern ${idx + 1} for goal platform ${this.platformId}`);
-                    },
-                    undefined,
-                    (error) => {
-                        console.error('Error loading Lantern_v2.obj:', error);
-                    }
-                );
+            this.assetManager.loadOBJ(
+                'assets/models/Stone_Lantern_v2.obj',
+                (object) => configureLanternObject(object, pos, idx),
+                undefined,
+                (error) => {
+                console.error('Error loading Lantern_v2.obj:', error);
+                }
+            );
             } 
             else {
-                // Fallback to direct OBJ loader
-                const objLoader = new OBJLoader();
-                objLoader.load(
-                    'assets/models/Stone_Lantern_v2.obj',
-                    (object) => {
-                        object.scale.set(0.1, 0.1, 0.1);
-                        object.position.set(pos.x, y + 0.25, pos.z);
-                        object.rotation.x = THREE.MathUtils.degToRad(-90);
-                        object.rotation.y = THREE.MathUtils.degToRad(0);
-                        // Apply stone/rock material and shadow settings
-                        const stoneMaterial = new THREE.MeshStandardMaterial({
-                            color: 0x888888,
-                            roughness: 0.85,
-                            metalness: 0.15,
-                            flatShading: true
-                        });
-                        object.traverse((child) => {
-                            if (child.isMesh) {
-                                child.material = stoneMaterial;
-                                // Apply shadow settings based on current shadow mode
-                                if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                                    const shadowMode = window.game.gameState.getShadowMode();
-                                    if (shadowMode === 0) { // No shadows
-                                        child.castShadow = false;
-                                        child.receiveShadow = false;
-                                    } else if (shadowMode === 1) { // All shadows
-                                        child.castShadow = true;
-                                        child.receiveShadow = true;
-                                    } else { // Platforms only - lanterns are decorative objects, no shadows
-                                        child.castShadow = false;
-                                        child.receiveShadow = false;
-                                    }
-                                } else {
-                                    // Default: lanterns don't cast shadows
-                                    child.castShadow = false;
-                                    child.receiveShadow = false;
-                                }
-                            }
-                        });
-                        this.scene.add(object);
-                        this.stoneLanterns.push(object);
-                        console.log(`Loaded Lantern ${idx + 1} for goal platform ${this.platformId}`);
-                    },
-                    undefined,
-                    (error) => {
-                        console.error('Error loading Lantern_v2.obj:', error);
-                    }
-                );
+            // Fallback to direct OBJ loader if assetManager is not available
+            const objLoader = new OBJLoader();
+            objLoader.load(
+                'assets/models/Stone_Lantern_v2.obj',
+                (object) => configureLanternObject(object, pos, idx),
+                undefined,
+                (error) => {
+                console.error('Error loading Lantern_v2.obj:', error);
+                }
+            );
             }
         });
     }
@@ -250,15 +215,30 @@ export class GoalPlatform extends BasePlatform {
             this.scene.add(this.buddhistTemple);
             console.log(`Successfully loaded Buddhist Temple for goal platform ${this.platformId} at edge position`);
         };
-        const fbxLoader = new FBXLoader();
-        fbxLoader.load(
-            'assets/models/jp_building.fbx',
-            loadTempleModel,
-            undefined,
-            (error) => {
-                console.error(`Error loading Buddhist Temple FBX for platform ${this.platformId}:`, error);
-            }
-        );
+
+        // Use AssetManager if available, otherwise fallback to direct FBX loader
+        if (this.assetManager) {
+            this.assetManager.loadFBX(
+                'assets/models/jp_building.fbx',
+                loadTempleModel,
+                undefined,
+                (error) => {
+                    console.error(`Error loading Buddhist Temple FBX for platform ${this.platformId}:`, error);
+                }
+            );
+        } 
+        else {
+            // Fallback to direct FBX loader if assetManager is not available
+            const fbxLoader = new FBXLoader();
+            fbxLoader.load(
+                'assets/models/jp_building.fbx',
+                loadTempleModel,
+                undefined,
+                (error) => {
+                    console.error(`Error loading Buddhist Temple FBX for platform ${this.platformId}:`, error);
+                }
+            );
+        }
     }
 
     removeFromScene() {
