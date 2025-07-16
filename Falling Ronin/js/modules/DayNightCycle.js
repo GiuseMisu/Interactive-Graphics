@@ -85,9 +85,8 @@ export class DayNightCycle {
         this.moonLight = new THREE.DirectionalLight(0xB0C4DE, 0.8);
         this.moonLight.castShadow = true; // Enable to see shadows produced by moon light
 
-        // shadow PROPERTIES: BIGGER FOR SUN THEN MOON
-        this.moonLight.shadow.mapSize.width = 1408; // Smaller than sun light
-        this.moonLight.shadow.mapSize.height = 1408;
+        this.moonLight.shadow.mapSize.width = 2048; 
+        this.moonLight.shadow.mapSize.height = 2048;
 
         this.moonLight.shadow.camera.near = 0.1;
         this.moonLight.shadow.camera.far = 150; // Increased for better coverage

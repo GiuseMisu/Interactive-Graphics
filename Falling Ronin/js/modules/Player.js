@@ -420,6 +420,7 @@ export class Player {
         const platforms = this.platformManager.getAllPlatforms();
         
         for (const platform of platforms) {
+            //find the checkpoint platform
             if (platform.userData && platform.userData.isCheckpoint) {
                 // More strict check: ensure player is ON the platform, not just horizontally aligned
                 const platformTop = platform.position.y + (platform.geometry.parameters.height / 2);
@@ -548,7 +549,7 @@ export class Player {
         if (this.platformManager) {
             const platforms = this.platformManager.getAllPlatforms();
             for (const platform of platforms) {
-                // Look for the main platform (largest one at center)
+                // Look for the main platform
                 if (Math.abs(platform.position.x) < 1 && Math.abs(platform.position.z) < 1) {
                     mainPlatform = platform;
                     break;
@@ -596,6 +597,8 @@ export class Player {
     }
     
     //====================== MANAGERS & STATE ======================
+
+    //reference to the class MapManager initialized in Game.js so that you have access to the platforms and functionalities
     setPlatformManager(platformManager) {
         this.platformManager = platformManager;
     }
@@ -667,7 +670,6 @@ export class Player {
             }
         }
          
-
         // 2. LEG ANIMATION
         const legSwingAmplitude = 0.65;
         // swing for each leg

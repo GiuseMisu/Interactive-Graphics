@@ -25,6 +25,7 @@ export class TrapDoorSpawner {
         
         // Spawn frequency configuration
         this.spawnFrequency = spawnFrequency; // Time between spawns in seconds (default: 3.0 for Map1)
+        
         // Bounciness and friction for barrels
         this.bounciness = bounciness;
         this.friction = friction;
@@ -55,7 +56,7 @@ export class TrapDoorSpawner {
         // - hingeOffset: where to position the hinge relative to center
         // - doorOffset: where to position the door relative to hinge
         // - rotationAxis: which axis to rotate around
-        // - rotationDirection: direction of rotation (1 or -1)
+        // - rotationDirection: direction of rotation (1 or -1) of 
         // - barrelDirection: direction for barrel velocity
         
         const configs = {
@@ -119,7 +120,7 @@ export class TrapDoorSpawner {
 
         this.scene.add(this.interior);
         
-        // Create the trap door itself (movable part) - all wood now
+        // Create the trap door itself (movable part) - all wood
         const doorGeometry = new THREE.BoxGeometry(2.0, 0.08, 2.0);
         
         // Create wood material for all surfaces of the door
@@ -271,7 +272,7 @@ export class TrapDoorSpawner {
 
         this.scene.add(this.warningLight);
         
-        // Add a point light for the warning effect
+        // Add a point source light for the warning effect
         this.warningPointLight = new THREE.PointLight(0xff4444, 0, 3);
         this.warningPointLight.position.copy(this.warningLight.position);
         this.scene.add(this.warningPointLight);

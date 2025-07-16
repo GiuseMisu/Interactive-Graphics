@@ -231,35 +231,37 @@ export class GoalPlatform extends BasePlatform {
         // tile properties 
         const tileSize = 48; // Bigger tiles
         const groutWidth = 2; // Gold lines
-        const tilesPerRow = Math.floor(canvas.width / tileSize);
+        const tilesPerRow = Math.floor(canvas.width / tileSize); //floor to rounds down and have full tiles 
         const tilesPerCol = Math.floor(canvas.height / tileSize);
         // background with gold (color)
-        ctx.fillStyle = '#FFD700';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#FFD700'; //the lines that appear between the tiles
+        ctx.fillRect(0, 0, canvas.width, canvas.height); // big rectangle to fill the canvas
         
         for (let row = 0; row < tilesPerCol; row++) {
             for (let col = 0; col < tilesPerRow; col++) {
-                const x = col * tileSize + groutWidth;
+                const x = col * tileSize + groutWidth; // groutWidth to leave space for gold lines
                 const y = row * tileSize + groutWidth;
                 const width = tileSize - groutWidth * 2;
                 const height = tileSize - groutWidth * 2;
-                // Create pure white marble base with very subtle variations
-                const variation = Math.random() * 0.02; // Reduced variation for whiter appearance
+                // pure white marble base with very subtle variations
+                const variation = Math.random() * 0.02; 
                 const whiteValue = Math.floor(255 * (0.98 + variation)); // whiter
+                //insert the filling color
                 ctx.fillStyle = `rgb(${whiteValue}, ${whiteValue}, ${whiteValue})`;
-                ctx.fillRect(x, y, width, height);
-                // no shine effect: no highlight
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
-                ctx.fillRect(x + width - 1, y + 1, 1, height - 1);
-                ctx.fillRect(x + 1, y + height - 1, width - 1, 1);
+                ctx.fillRect(x, y, width, height); //draw rectangle for the tile
+                // // no shine effect: no highlight
+                // ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+                // ctx.fillRect(x + width - 1, y + 1, 1, height - 1);
+                // ctx.fillRect(x + 1, y + height - 1, width - 1, 1);
             }
         }
         // Create texture from canvas
         const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
+        //repeat the texture to fill the platform
+        texture.wrapS = THREE.RepeatWrapping; 
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(4, 4); // Repeat the pattern 4 times in each direction
-        // Create material with the custom texture - marble-like properties
+        
         const material = new THREE.MeshStandardMaterial({
             map: texture,
             roughness: 0.7, // High roughness, no shine
@@ -270,7 +272,7 @@ export class GoalPlatform extends BasePlatform {
     }
 
     addGoldenEdges(x, y, z, width, depth) {
-        // Add golden planes with each lateral face of the platform
+        // golden planes with each lateral face of the platform
         const edgeThickness = 0.01; // Very thin
         const edgeHeight = 0.5; // Match platform height
         const edgeMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide });

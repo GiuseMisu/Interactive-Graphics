@@ -8,7 +8,6 @@ export class Barrel {
         this.gravity = -9.8;
         this.friction = 0.95;
         this.bounciness = 0.9;
-        this.groundLevel = 0.25;
         this.lifetime = 0;
         this.maxLifetime = 30; // 30 seconds before respawn [default]
         this.respawnThreshold = -10;
@@ -118,7 +117,7 @@ export class Barrel {
         this.mesh.rotation.x = Math.PI / 2;
     }
 
-    // New method for dynamic platform collision detection
+    // method for dynamic platform collision detection
     checkPlatformCollisions(platforms) {
         // If no platforms are provided, skip collision checks
         if (!platforms || platforms.length === 0) return;
@@ -130,7 +129,7 @@ export class Barrel {
         for (let platform of platforms) {
             // Safety check to ensure platform has all required properties
             if (!platform || !platform.position || !platform.geometry || !platform.geometry.parameters) {
-                console.warn('Barrel collision: Invalid platform object detected, skipping...', platform);
+                console.warn('Barrel collision: Invalid platform object detected, skipping', platform);
                 continue;
             }
             

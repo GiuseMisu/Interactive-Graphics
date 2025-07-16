@@ -52,7 +52,6 @@ window.cameraController = new CameraController(camera,
                                                player.model //TARGET
                                             );
 
-
 // Initialize day-night cycle
 const dayNightCycle = new DayNightCycle(scene, renderer);
 
@@ -93,6 +92,8 @@ loadingManager.setOnCompleteCallback(() => {
     }
 });
 
+//===========================================
+
 function startGame() {
     // Clear any existing pending game start flag
     window.pendingGameStart = false;
@@ -109,6 +110,11 @@ function startGame() {
     }
 }
 
+// Pass the startGame **function** to the game already defined
+game.setStartGameCallback(startGame);
+
+//===========================================
+
 function stopGame() {
     gameStarted = false;
     window.gameStarted = false;
@@ -123,12 +129,10 @@ function stopGame() {
         game.reset();
     }
 }
-
-// Pass the startGame function to the game
-game.setStartGameCallback(startGame);
-
-// Set up the return to menu callback for the UI
+// Pass the stopGame **function** to the game already defined
 game.setReturnToMenuCallback(stopGame);
+
+//===========================================
 
 // Expose stopGame function to window for UI access
 window.stopGame = stopGame;
@@ -145,7 +149,7 @@ window.addEventListener('resize', () => {
 
 // Animation loop
 function animate() {
-    requestAnimationFrame(animate); //do not remove
+    requestAnimationFrame(animate); 
 
     // Update game state
     const deltaTime = 1/60; // time step -> 60 frames per second = each frame takes 1/60th of a second

@@ -14,7 +14,7 @@ export class Game {
         // Initialize map manager with scene and player
         this.mapManager.initialize(this.scene, this.player);
         
-        // Set up platform manager for player collision detection
+        // Set up platform manager for player collision detection, obtain all the platforms from the map manager, etc...
         this.player.setPlatformManager(this.mapManager);
         
         // Set up game state for player checkpoint system

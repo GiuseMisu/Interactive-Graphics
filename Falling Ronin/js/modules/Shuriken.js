@@ -118,6 +118,9 @@ export class Shuriken {
 
     // Defines the path around the platform that the shuriken follows
     generatePath() {
+        //when created in map_i file it calls the maptools with a specific 
+        // platform id and it retrieves the platform position and size
+
         // Generate rectangular path around platform perimeter
         const { x, y, z } = this.platformPosition; // reference to platform position AT THE CENTER OF THE PLATFORM
         const { width, depth } = this.platformSize; // reference to platform size
@@ -129,6 +132,7 @@ export class Shuriken {
         // Create rectangular path points, not directly on the border but slightly offset inside
         // STARTING FROM THE CENTER COORDINATES OF THE PLATFORM ADD THE WIDTH AND DEPTH OF THE PLATFORM (TO GET EDGES) 
         // AND REMOVE THE MARGIN TO MAKE IT A BIT INSIDE THE PLATFORM
+        //for each corner two points are defined to make it less sharp turns
         this.pathPoints = [
             // Front edge
             new THREE.Vector3(x + width/2 - margin, pathY, z + depth/2 - margin/2), // Front-right part
@@ -157,9 +161,7 @@ export class Shuriken {
     update(deltaTime, player = null) {
 
         this.player = player; //take the current player reference to be always updated to check collision
-        
-        //not called this.time += deltaTime;  // increase time
-        
+                
         // Update position along path with smooth transitions
         this.updateMovement(deltaTime);
         

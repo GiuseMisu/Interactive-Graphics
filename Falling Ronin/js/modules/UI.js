@@ -26,6 +26,7 @@ export class UI {
         this.returnToMenuCallback = callback;
     }
 
+
     createMapSelectionScreen() {
         // Create a container for the map selection UI
         const container = document.createElement('div');
@@ -65,6 +66,11 @@ export class UI {
         buttonContainer.style.gap = '30px';
         container.appendChild(buttonContainer);
         
+        
+        //====================================================
+        //                Map Selection buttons
+        //====================================================
+
         // Map 1 Button
         const map1Button = document.createElement('button');
         map1Button.innerText = 'Map 1';
@@ -187,7 +193,9 @@ export class UI {
         musicButton.onclick = () => this.toggleMusic();
         container.appendChild(musicButton);
 
-        // Instructions
+        //====================================================
+        //            Instructions Display
+        //====================================================        
         const instructions = document.createElement('div');
         instructions.style.marginTop = '60px';
         instructions.style.padding = '20px';
@@ -208,6 +216,7 @@ export class UI {
         document.body.appendChild(container);
     }
     
+    //style of the button present in the map selection screen
     styleButton(button) {
         button.style.padding = '20px 40px';
         button.style.fontSize = '1.8rem';
@@ -244,8 +253,9 @@ export class UI {
         };
     }
 
-
+    //===========================================================
     // Method called once the ShadowButton is pressed 
+    //===========================================================
     toggleShadowMode() {
         if (!this.mapManager.gameState) return;
         
@@ -261,7 +271,9 @@ export class UI {
         console.log(`Shadow mode toggled to: ${this.mapManager.gameState.getShadowModeString()}`);
     }
 
+    //===========================================================
     // Method called when the music button is pressed
+    //===========================================================
     toggleMusic() {
         if (!window.musicManager) return;
 
@@ -291,7 +303,9 @@ export class UI {
         console.log(`Music ${isEnabled ? 'enabled' : 'disabled'}`);
     }
     
-    //function called when pressed the button of the map choice
+    //===========================================================
+    //  function called when pressed the button of the map choice
+    //===========================================================
     loadMap(mapName) {
         // Start a new loading session
         if (window.loadingManager) {
@@ -356,6 +370,9 @@ export class UI {
         this.hideGameUI();
     }
     
+    //===========================================================
+    //           COORDINATE DISPLAY FOR DEBUG
+    //===========================================================
     createCoordinatesDisplay() {
         // Create container for coordinates display - placed under the menu button
         const coordsDisplay = document.createElement('div');
@@ -407,6 +424,9 @@ export class UI {
         `;
     }
     
+    //===========================================================
+    //           DEATH COUNTER DISPLAY
+    //===========================================================
     createDeathCounterDisplay() {
         // Create container for death counter display - positioned in top-right, matching main menu style
         const deathCounterDisplay = document.createElement('div');
@@ -440,6 +460,50 @@ export class UI {
         document.body.appendChild(deathCounterDisplay);
     }
     
+    updateDeathCounter() {
+        this.deathCount++;
+        const deathCounterDisplay = document.getElementById('deathCounter');
+        if (deathCounterDisplay) {
+            // Show the death counter display if it's hidden
+            deathCounterDisplay.style.display = 'block';
+            
+            // Update the counter with animation
+            deathCounterDisplay.innerHTML = `
+                <div style="font-size: 14px; margin-bottom: 3px;">💀</div>
+                <div style="font-size: 8px;">DEATHS</div>
+                <div style="font-size: 16px; margin-top: 3px;">${this.deathCount}</div>
+            `;
+            
+            // Add a brief flash animation - brighter red flash
+            deathCounterDisplay.style.transform = 'scale(1.1)';
+            deathCounterDisplay.style.backgroundColor = '#ff4757'; // Brighter red flash
+            
+            setTimeout(() => {
+                deathCounterDisplay.style.transform = 'scale(1)';
+                deathCounterDisplay.style.backgroundColor = '#e74c3c'; // Back to normal red
+            }, 200);
+        }
+    }
+
+    resetDeathCounter() {
+        this.deathCount = 0;
+        // Update the display without incrementing the counter
+        const deathCounterDisplay = document.getElementById('deathCounter');
+        if (deathCounterDisplay) {
+            deathCounterDisplay.innerHTML = `
+                <div style="font-size: 14px; margin-bottom: 3px;">💀</div>
+                <div style="font-size: 8px;">DEATHS</div>
+                <div style="font-size: 16px; margin-top: 3px;">${this.deathCount}</div>
+            `;
+        }
+        
+        // Also reset checkpoint status (without animation since it's a reset)
+        this.updateCheckpointStatus(false, '', false);
+    }
+
+    //===========================================================
+    //           CHECK POINT DISPLAY
+    //===========================================================
     createCheckpointDisplay() {
         // Create container for checkpoint status display - positioned below death counter
         const checkpointDisplay = document.createElement('div');
@@ -472,7 +536,124 @@ export class UI {
         
         document.body.appendChild(checkpointDisplay);
     }
+
+    updateCheckpointStatus(hasCheckpoint, checkpointName = '', animate = true) {
+        this.hasCheckpoint = hasCheckpoint;
+        this.checkpointName = checkpointName;
+
+        const checkpointDisplay = document.getElementById('checkpointStatus');
+        if (checkpointDisplay) {
+            if (hasCheckpoint) {
+                // Get checkpoint progress from GameState
+                const totalCheckpoints = window.game.gameState.checkpoints.size;
+                const unlockedCheckpoints = Array.from(window.game.gameState.checkpoints.values()).filter(cp => cp.reached).length;
+
+                // Show active checkpoint with green styling
+                checkpointDisplay.style.backgroundColor = '#27ae60'; // Green
+                checkpointDisplay.style.border = '2px solid #2ecc71';
+                checkpointDisplay.style.boxShadow = '0 4px 0 #2ecc71';
+                checkpointDisplay.style.textShadow = '1px 1px 0px #2ecc71';
+
+                checkpointDisplay.innerHTML = `
+                    <div style="font-size: 12px; margin-bottom: 3px;">✅</div>
+                    <div style="font-size: 7px;">CHECKPOINT</div>
+                    <div style="font-size: 8px; margin-top: 3px;">${unlockedCheckpoints}/${totalCheckpoints}</div>
+                `;
+
+                if (animate) {
+                    checkpointDisplay.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        checkpointDisplay.style.transform = 'scale(1)';
+                    }, 200);
+                } else {
+                    // Ensure no scaling animation
+                    checkpointDisplay.style.transform = 'scale(1)';
+                }
+            } else {
+                // Show no checkpoint with default styling
+                checkpointDisplay.style.backgroundColor = '#2c3e50'; // Dark blue-gray
+                checkpointDisplay.style.border = '2px solid #34495e';
+                checkpointDisplay.style.boxShadow = '0 4px 0 #34495e';
+                checkpointDisplay.style.textShadow = '1px 1px 0px #34495e';
+
+                checkpointDisplay.innerHTML = `
+                    <div style="font-size: 12px; margin-bottom: 3px;">🚩</div>
+                    <div style="font-size: 7px;">CHECKPOINT</div>
+                    <div style="font-size: 9px; margin-top: 3px;">NONE</div>
+                `;
+            }
+        }
+    }
     
+    //===========================================================
+    //           RETURN TO MENU BUTTON
+    //===========================================================
+    createReturnToMenuButton() {
+        // Create the return to menu button
+        const returnButton = document.createElement('button');
+        returnButton.id = 'returnToMenuButton';
+        returnButton.innerText = 'MENU';
+        returnButton.style.position = 'absolute';
+        returnButton.style.top = '20px';
+        returnButton.style.left = '20px'; // Moved to top-left
+        returnButton.style.padding = '10px 20px';
+        returnButton.style.fontSize = '12px';
+        returnButton.style.backgroundColor = '#e74c3c';
+        returnButton.style.color = 'white';
+        returnButton.style.border = '2px solid #c0392b';
+        returnButton.style.borderRadius = '8px';
+        returnButton.style.cursor = 'pointer'; // clickable cursor
+        returnButton.style.fontFamily = '"Press Start 2P", Arial, sans-serif';
+        returnButton.style.zIndex = '150';
+        returnButton.style.display = 'none'; // Hidden by default
+        returnButton.style.transition = 'all 0.2s ease';
+        returnButton.style.textShadow = '1px 1px 0px #c0392b';
+        returnButton.style.boxShadow = '0 4px 0 #c0392b';
+
+        // Add hover effects
+        returnButton.onmouseover = () => {
+            returnButton.style.backgroundColor = '#ff6b5a';
+            returnButton.style.transform = 'translateY(-2px)';
+            returnButton.style.boxShadow = '0 6px 0 #c0392b';
+        };
+        
+        returnButton.onmouseout = () => {
+            returnButton.style.backgroundColor = '#e74c3c';
+            returnButton.style.transform = 'translateY(0)';
+            returnButton.style.boxShadow = '0 4px 0 #c0392b';
+        };
+
+        returnButton.onmousedown = () => {
+            returnButton.style.transform = 'translateY(2px)';
+            returnButton.style.boxShadow = '0 2px 0 #c0392b';
+        };
+
+        returnButton.onmouseup = () => {
+            returnButton.style.transform = 'translateY(0)';
+            returnButton.style.boxShadow = '0 4px 0 #c0392b';
+        };
+
+        // Add click event to return to menu
+        returnButton.onclick = () => {
+            this.returnToMenu();
+        };
+        
+        document.body.appendChild(returnButton);
+    }
+
+    returnToMenu() {
+        if (this.returnToMenuCallback) { // NEW: Execute the callback
+            this.returnToMenuCallback();
+        }
+
+        this.mapManager.returnToMenu();
+        this.hideGameUI(); // Hide in-game UI elements
+        this.showMapSelection(); // Show the main menu
+    }
+
+    //===========================================================
+    //           LEVEL COMPLETE SCREEN
+    //===========================================================
     createLevelCompleteScreen() {
         // Create the level complete screen overlay
         const completeScreen = document.createElement('div');
@@ -597,121 +778,6 @@ export class UI {
         document.head.appendChild(style);
     }
     
-    updateDeathCounter() {
-        this.deathCount++;
-        const deathCounterDisplay = document.getElementById('deathCounter');
-        if (deathCounterDisplay) {
-            // Show the death counter display if it's hidden
-            deathCounterDisplay.style.display = 'block';
-            
-            // Update the counter with animation
-            deathCounterDisplay.innerHTML = `
-                <div style="font-size: 14px; margin-bottom: 3px;">💀</div>
-                <div style="font-size: 8px;">DEATHS</div>
-                <div style="font-size: 16px; margin-top: 3px;">${this.deathCount}</div>
-            `;
-            
-            // Add a brief flash animation - brighter red flash
-            deathCounterDisplay.style.transform = 'scale(1.1)';
-            deathCounterDisplay.style.backgroundColor = '#ff4757'; // Brighter red flash
-            
-            setTimeout(() => {
-                deathCounterDisplay.style.transform = 'scale(1)';
-                deathCounterDisplay.style.backgroundColor = '#e74c3c'; // Back to normal red
-            }, 200);
-        }
-    }
-    
-    updateCheckpointStatus(hasCheckpoint, checkpointName = '', animate = true) {
-        this.hasCheckpoint = hasCheckpoint;
-        this.checkpointName = checkpointName;
-
-        const checkpointDisplay = document.getElementById('checkpointStatus');
-        if (checkpointDisplay) {
-            if (hasCheckpoint) {
-                // Get checkpoint progress from GameState
-                const totalCheckpoints = window.game.gameState.checkpoints.size;
-                const unlockedCheckpoints = Array.from(window.game.gameState.checkpoints.values()).filter(cp => cp.reached).length;
-
-                // Show active checkpoint with green styling
-                checkpointDisplay.style.backgroundColor = '#27ae60'; // Green
-                checkpointDisplay.style.border = '2px solid #2ecc71';
-                checkpointDisplay.style.boxShadow = '0 4px 0 #2ecc71';
-                checkpointDisplay.style.textShadow = '1px 1px 0px #2ecc71';
-
-                checkpointDisplay.innerHTML = `
-                    <div style="font-size: 12px; margin-bottom: 3px;">✅</div>
-                    <div style="font-size: 7px;">CHECKPOINT</div>
-                    <div style="font-size: 8px; margin-top: 3px;">${unlockedCheckpoints}/${totalCheckpoints}</div>
-                `;
-
-                if (animate) {
-                    checkpointDisplay.style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        checkpointDisplay.style.transform = 'scale(1)';
-                    }, 200);
-                } else {
-                    // Ensure no scaling animation
-                    checkpointDisplay.style.transform = 'scale(1)';
-                }
-            } else {
-                // Show no checkpoint with default styling
-                checkpointDisplay.style.backgroundColor = '#2c3e50'; // Dark blue-gray
-                checkpointDisplay.style.border = '2px solid #34495e';
-                checkpointDisplay.style.boxShadow = '0 4px 0 #34495e';
-                checkpointDisplay.style.textShadow = '1px 1px 0px #34495e';
-
-                checkpointDisplay.innerHTML = `
-                    <div style="font-size: 12px; margin-bottom: 3px;">🚩</div>
-                    <div style="font-size: 7px;">CHECKPOINT</div>
-                    <div style="font-size: 9px; margin-top: 3px;">NONE</div>
-                `;
-            }
-        }
-    }
-    
-    showGameUI() {
-        // Show coordinates, death counter, checkpoint status, and return to menu button when game starts
-        // const coordsDisplay = document.getElementById('playerCoordinates');
-        const deathCounterDisplay = document.getElementById('deathCounter');
-        const checkpointDisplay = document.getElementById('checkpointStatus');
-        const returnButton = document.getElementById('returnToMenuButton');
-        
-        // if (coordsDisplay) coordsDisplay.style.display = 'block';
-        if (deathCounterDisplay) deathCounterDisplay.style.display = 'block';
-        if (checkpointDisplay) checkpointDisplay.style.display = 'block';
-        if (returnButton) returnButton.style.display = 'block';
-    }
-    
-    hideGameUI() {
-        // Hide all displays when returning to menu
-        // const coordsDisplay = document.getElementById('playerCoordinates');
-        const deathCounterDisplay = document.getElementById('deathCounter');
-        const checkpointDisplay = document.getElementById('checkpointStatus');
-        const returnButton = document.getElementById('returnToMenuButton');
-        
-        // if (coordsDisplay) coordsDisplay.style.display = 'none';
-        if (deathCounterDisplay) deathCounterDisplay.style.display = 'none';
-        if (checkpointDisplay) checkpointDisplay.style.display = 'none';
-        if (returnButton) returnButton.style.display = 'none';
-    }
-    
-    resetDeathCounter() {
-        this.deathCount = 0;
-        // Update the display without incrementing the counter
-        const deathCounterDisplay = document.getElementById('deathCounter');
-        if (deathCounterDisplay) {
-            deathCounterDisplay.innerHTML = `
-                <div style="font-size: 14px; margin-bottom: 3px;">💀</div>
-                <div style="font-size: 8px;">DEATHS</div>
-                <div style="font-size: 16px; margin-top: 3px;">${this.deathCount}</div>
-            `;
-        }
-        
-        // Also reset checkpoint status (without animation since it's a reset)
-        this.updateCheckpointStatus(false, '', false);
-    }
-    
     showLevelCompleteScreen() {
         const completeScreen = document.getElementById('levelCompleteScreen');
         if (completeScreen) {
@@ -779,6 +845,9 @@ export class UI {
         }, 10000);
     }
     
+    //===========================================================
+    //           DEATH MESSAGE DISPLAY
+    //===========================================================
     createDeathMessageDisplay() {
         // Create container for death message display - centered on screen (smaller and more transparent)
         const deathMessageDisplay = document.createElement('div');
@@ -846,7 +915,7 @@ export class UI {
         setTimeout(() => {
             deathMessageDisplay.style.opacity = '1';
             deathMessageDisplay.style.transform = 'translate(-50%, -50%) scale(1)';
-        }, 50);
+        }, 50); // Small delay for smoother animation
         
         // Hide after 0.6 seconds (reduced from 1 second)
         setTimeout(() => {
@@ -857,69 +926,36 @@ export class UI {
             setTimeout(() => {
                 deathMessageDisplay.style.display = 'none';
             }, 300);
-        }, 600); // Reduced from 1000ms to 600ms
+        }, 600); // Reduced to 600ms
+    }
+
+    //===========================================================
+    //                GAME UI APPEARANCE Methods
+    //===========================================================
+    
+    showGameUI() {
+        // Show coordinates, death counter, checkpoint status, and return to menu button when game starts
+        // const coordsDisplay = document.getElementById('playerCoordinates');
+        const deathCounterDisplay = document.getElementById('deathCounter');
+        const checkpointDisplay = document.getElementById('checkpointStatus');
+        const returnButton = document.getElementById('returnToMenuButton');
+        
+        // if (coordsDisplay) coordsDisplay.style.display = 'block';
+        if (deathCounterDisplay) deathCounterDisplay.style.display = 'block';
+        if (checkpointDisplay) checkpointDisplay.style.display = 'block';
+        if (returnButton) returnButton.style.display = 'block';
     }
     
-    createReturnToMenuButton() {
-        // Create the return to menu button
-        const returnButton = document.createElement('button');
-        returnButton.id = 'returnToMenuButton';
-        returnButton.innerText = 'MENU';
-        returnButton.style.position = 'absolute';
-        returnButton.style.top = '20px';
-        returnButton.style.left = '20px'; // Moved to top-left
-        returnButton.style.padding = '10px 20px';
-        returnButton.style.fontSize = '12px';
-        returnButton.style.backgroundColor = '#e74c3c';
-        returnButton.style.color = 'white';
-        returnButton.style.border = '2px solid #c0392b';
-        returnButton.style.borderRadius = '8px';
-        returnButton.style.cursor = 'pointer';
-        returnButton.style.fontFamily = '"Press Start 2P", Arial, sans-serif';
-        returnButton.style.zIndex = '150';
-        returnButton.style.display = 'none'; // Hidden by default
-        returnButton.style.transition = 'all 0.2s ease';
-        returnButton.style.textShadow = '1px 1px 0px #c0392b';
-        returnButton.style.boxShadow = '0 4px 0 #c0392b';
-
-        // Add hover effects
-        returnButton.onmouseover = () => {
-            returnButton.style.backgroundColor = '#ff6b5a';
-            returnButton.style.transform = 'translateY(-2px)';
-            returnButton.style.boxShadow = '0 6px 0 #c0392b';
-        };
+    hideGameUI() {
+        // Hide all displays when returning to menu
+        // const coordsDisplay = document.getElementById('playerCoordinates');
+        const deathCounterDisplay = document.getElementById('deathCounter');
+        const checkpointDisplay = document.getElementById('checkpointStatus');
+        const returnButton = document.getElementById('returnToMenuButton');
         
-        returnButton.onmouseout = () => {
-            returnButton.style.backgroundColor = '#e74c3c';
-            returnButton.style.transform = 'translateY(0)';
-            returnButton.style.boxShadow = '0 4px 0 #c0392b';
-        };
-
-        returnButton.onmousedown = () => {
-            returnButton.style.transform = 'translateY(2px)';
-            returnButton.style.boxShadow = '0 2px 0 #c0392b';
-        };
-
-        returnButton.onmouseup = () => {
-            returnButton.style.transform = 'translateY(0)';
-            returnButton.style.boxShadow = '0 4px 0 #c0392b';
-        };
-
-        // Add click event to return to menu
-        returnButton.onclick = () => {
-            this.returnToMenu();
-        };
-        
-        document.body.appendChild(returnButton);
-    }
-
-    returnToMenu() {
-        if (this.returnToMenuCallback) { // NEW: Execute the callback
-            this.returnToMenuCallback();
-        }
-
-        this.mapManager.returnToMenu();
-        this.hideGameUI(); // Hide in-game UI elements
-        this.showMapSelection(); // Show the main menu
+        // if (coordsDisplay) coordsDisplay.style.display = 'none';
+        if (deathCounterDisplay) deathCounterDisplay.style.display = 'none';
+        if (checkpointDisplay) checkpointDisplay.style.display = 'none';
+        if (returnButton) returnButton.style.display = 'none';
     }
 }

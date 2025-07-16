@@ -60,6 +60,7 @@ export class CheckpointPlatform extends BasePlatform {
     }
 
     loadArchModel(x, y, z) {
+        //onload call back will be called 
        const onLoad = (object) => {
             this.archModel = object;
             this.archModel.scale.set(0.013, 0.013, 0.013);

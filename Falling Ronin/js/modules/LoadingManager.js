@@ -10,7 +10,7 @@ export class LoadingManager {
         this.loadedItems = 0;
 
         // Callbacks for loading events
-        // can be retrieved from the outside to understand the progress state of the loading process
+        // retrieved from MAIN.js file and set up the game variables in order to make it runnable
         this.onCompleteCallback = null;
         
         // Three.js LoadingManager
@@ -51,16 +51,11 @@ export class LoadingManager {
             
             // Update loading screen to show 100% completion
             this.updateLoadingScreen();
-            
-            const loadingText = document.getElementById('loadingText');
-            if (loadingText) {
-                loadingText.innerText = 'FINALIZING...';
-                loadingText.style.animation = 'loadingPulse 0.8s ease-in-out infinite';
-            }
-            
+                        
             // 3-second delay to ensure everything is really loaded and prevent lag
             setTimeout(() => {
                 this.hideLoadingScreen();
+                //if 
                 if (this.onCompleteCallback) {
                     this.onCompleteCallback();
                 }
@@ -89,17 +84,8 @@ export class LoadingManager {
             
             // progress bar starts at 0%
             const progressBar = document.getElementById('loadingProgressBar');
-            const percentageText = document.getElementById('loadingPercentage');
-            const assetsCounter = document.getElementById('assetsCounter');
-            
             if (progressBar) {
                 progressBar.style.width = '0%';
-            }
-            if (percentageText) {
-                percentageText.innerText = '0%';
-            }
-            if (assetsCounter) {
-                assetsCounter.innerText = '0 / 0 assets';
             }
             // Hide map selection screen if visible
             const mapSelectionScreen = document.getElementById('mapSelectionScreen');
@@ -123,7 +109,6 @@ export class LoadingManager {
             const loadingText = document.getElementById('loadingText');
             if (loadingText) {
                 loadingText.innerText = 'LOADING...';
-                loadingText.style.animation = 'loadingPulse 1.5s ease-in-out infinite';
             }
             
             // Re-enable keyboard input
@@ -133,19 +118,10 @@ export class LoadingManager {
     
     updateLoadingScreen() {
         const progressBar = document.getElementById('loadingProgressBar');
-        const percentageText = document.getElementById('loadingPercentage');
-        const assetsCounter = document.getElementById('assetsCounter');
         
         const percentage = Math.round(this.loadingProgress * 100);
-        
         if (progressBar) {
             progressBar.style.width = `${percentage}%`;
-        }
-        if (percentageText) {
-            percentageText.innerText = `${percentage}%`;
-        }
-        if (assetsCounter) {
-            assetsCounter.innerText = `${this.loadedItems} / ${this.totalItems} assets`;
         }
     }
 
@@ -207,29 +183,7 @@ export class LoadingManager {
         //if it returns true the keys are not processed
         return this.isLoading;
     }
-    
-    
-    // Reset the loading manager state
-    reset() {
-        this.isLoading = false;
-        this.loadingProgress = 0;
-        this.totalItems = 0;
-        this.loadedItems = 0;
         
-        // Reset any pending game start flag
-        if (window.pendingGameStart) {
-            window.pendingGameStart = false;
-        }
-        
-        // Reset the UI elements to show 0% progress
-        this.updateLoadingScreen();
-        
-        // Hide loading screen if visible
-        this.hideLoadingScreen();
-        
-        console.log('Loading manager reset successfully');
-    }
-    
     // Force completion of loading (for when all assets are cached)
     forceComplete() {
         // if not already loading
@@ -247,8 +201,7 @@ export class LoadingManager {
             // Show "Finalizing..." message
             const loadingText = document.getElementById('loadingText');
             if (loadingText) {
-                loadingText.innerText = 'FINALIZING...';
-                loadingText.style.animation = 'loadingPulse 0.8s ease-in-out infinite';
+                loadingText.innerText = 'FORCED FINALIZING...';
             }
             
             // 2-second delay to ensure everything is really loaded
@@ -271,6 +224,27 @@ export class LoadingManager {
         // Show loading screen with fresh 0% progress
         this.showLoadingScreen();
         console.log('Fresh loading session started');
+    }
+
+    // Reset the loading manager state
+    reset() {
+        this.isLoading = false;
+        this.loadingProgress = 0;
+        this.totalItems = 0;
+        this.loadedItems = 0;
+        
+        // Reset any pending game start flag
+        if (window.pendingGameStart) {
+            window.pendingGameStart = false;
+        }
+        
+        // Reset the UI elements to show 0% progress
+        this.updateLoadingScreen();
+        
+        // Hide loading screen if visible
+        this.hideLoadingScreen();
+        
+        console.log('Loading manager reset successfully');
     }
 
     //========================= LOADING SCREEN UI CREATION =========================
@@ -369,30 +343,8 @@ export class LoadingManager {
         progressContainer.appendChild(progressBar);
         loadingScreen.appendChild(progressContainer);
         
-        // Create percentage text
-        const percentageText = document.createElement('div');
-        percentageText.id = 'loadingPercentage';
-        percentageText.innerText = '0%';
-        percentageText.style.fontSize = '1.2rem';
-        percentageText.style.color = '#ffffff';
-        percentageText.style.marginTop = '20px';
-        percentageText.style.zIndex = '10';
-        percentageText.style.position = 'relative';
-        loadingScreen.appendChild(percentageText);
-        
-        // Create assets counter
-        const assetsCounter = document.createElement('div');
-        assetsCounter.id = 'assetsCounter';
-        assetsCounter.innerText = '0 / 0 assets';
-        assetsCounter.style.fontSize = '1rem';
-        assetsCounter.style.color = '#bdc3c7';
-        assetsCounter.style.marginTop = '10px';
-        assetsCounter.style.zIndex = '10';
-        assetsCounter.style.position = 'relative';
-        loadingScreen.appendChild(assetsCounter);
-        
-        // Add CSS animations
-        // it let the title glow, the loading text pulse, the progress bar shine and the background pulse
+        // CSS animations Custom
+        // title glow, the loading text pulse, the progress bar shine and the background pulse
         const style = document.createElement('style');
         style.textContent = `
             @keyframes titleGlow {
@@ -415,8 +367,8 @@ export class LoadingManager {
                 100% { opacity: 0.7; }
             }
         `;
+
         document.head.appendChild(style);
-        
         document.body.appendChild(loadingScreen);
     }
     

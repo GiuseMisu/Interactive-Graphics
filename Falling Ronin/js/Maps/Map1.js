@@ -93,6 +93,7 @@ export class Map1 {
         const barrelSpawnCallback = (barrel) => {
             this.barrels.push(barrel);
         };
+        bounciness = 0.5;
         const spawner = new TrapDoorSpawner(
             this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction
         );
