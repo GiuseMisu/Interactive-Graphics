@@ -13,7 +13,7 @@ export class Map1 {
         this.scene = scene;
         this.gameState = gameState; // Reference to game state for checkpoint system
         this.assetManager = assetManager; // Reference to asset manager
-        //this.shadowManager = gameState ? gameState.shadowManager : null; // Get shadowManager from gameState
+        
         this.platforms = [];
         this.barrels = [];
         this.shurikens = [];
@@ -53,18 +53,6 @@ export class Map1 {
         this.addPlatform(20, 27, -24, 22, 28, false, 'Platform 14 (GOAL)', true, false); // FINAL GOAL PLATFORM
     }
 
-    createTrapDoorSpawner(x, y, z, orientation = 'east', frequency_barrel_spawn = 3.0, bounciness = 0.9, friction = 0.3) {
-        // trap door spawner
-        const spawnerY = y + 0.25; // Platform surface
-        const barrelSpawnCallback = (barrel) => {
-            this.barrels.push(barrel);
-        };
-        const spawner = new TrapDoorSpawner(
-            this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction
-        );
-        this.trapDoorSpawners.push(spawner);
-    }
-
     addPlatform(x, y, z, width, depth, isCheckpoint = false, platformName = '', isGoal = false, isTimed = false) {
         return MapTools.addPlatform(
             this.scene, 
@@ -77,22 +65,8 @@ export class Map1 {
             isCheckpoint, platformName, isGoal, isTimed
         );
     }
-
-    spawnBarrel() {
-        // This method is now called by the trap door spawner
-        if (this.trapDoorSpawners.length > 0) {
-            const barrel = this.trapDoorSpawners[0].spawnBarrel(); //just one in this map
-            if (barrel) {
-                this.barrels.push(barrel);
-            }
-        }
-    }
     
-    createShuriken(platformIndex) {
-        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
-    }
-
-    update(deltaTime, player = null) {
+    updateCurrentMap(deltaTime, player = null) {
         // Update all trap door spawners (support multiple for consistency)
         this.trapDoorSpawners.forEach(spawner => {
             spawner.update(deltaTime);
@@ -108,6 +82,23 @@ export class Map1 {
             MapTools.checkTimedPlatformCollision(this.timedPlatforms, player);
         }
     }
+
+    createShuriken(platformIndex) {
+        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
+    }
+    
+    createTrapDoorSpawner(x, y, z, orientation = 'east', frequency_barrel_spawn = 3.0, bounciness = 0.9, friction = 0.3) {
+        // trap door spawner
+        const spawnerY = y + 0.25; // Platform surface
+        const barrelSpawnCallback = (barrel) => {
+            this.barrels.push(barrel);
+        };
+        const spawner = new TrapDoorSpawner(
+            this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction
+        );
+        this.trapDoorSpawners.push(spawner);
+    }
+
 
     clear() {
         // Remove all platforms from the scene
@@ -132,14 +123,6 @@ export class Map1 {
     // Essential wrapper methods used by external files
     getAllPlatforms() {
         return MapTools.getAllPlatforms(this.platforms);
-    }
-
-    getBarrels() {
-        return MapTools.getBarrels(this.barrels);
-    }
-    
-    getCheckpointPlatforms() {
-        return MapTools.getCheckpointPlatforms(this.checkpointPlatforms);
     }
 
     resetAllTimedPlatforms() {

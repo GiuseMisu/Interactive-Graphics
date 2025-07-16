@@ -100,7 +100,7 @@ export class CheckpointPlatform extends BasePlatform {
             this.archModel.userData.boxHelpers = boxHelpers;
             
             this.scene.add(this.archModel);
-            console.log(`Loaded Japanese Arch model for checkpoint platform ${this.platformId}`);
+            //console.log(`Loaded Japanese Arch model for checkpoint platform ${this.platformId}`);
         };
         const onError = (error) => {
             console.error('Error loading Japanese Arch model:', error);
@@ -110,6 +110,7 @@ export class CheckpointPlatform extends BasePlatform {
             this.assetManager.loadFBX('assets/models/Japanese_Arch_Low.FBX', onLoad, undefined, onError);
         } 
         else {
+            console.warn("[CheckpointPlatform Japanese_Arch] WARNING: AssetManager not available, using fallback FBXLoader.");
             const loader = new FBXLoader();
             loader.load('assets/models/Japanese_Arch_Low.FBX', onLoad, undefined, onError);
         }

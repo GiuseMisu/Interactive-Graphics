@@ -13,7 +13,7 @@ export class LoadingManager {
         // can be retrieved from the outside to understand the progress state of the loading process
         this.onCompleteCallback = null;
         
-        // Create Three.js LoadingManager
+        // Three.js LoadingManager
         // used to track the loading of assets in the scene and provide progress updates.
         // it checks the loading of assets like textures, models, etc. and tells when they are loaded.
         this.threeLoadingManager = new THREE.LoadingManager();
@@ -28,7 +28,7 @@ export class LoadingManager {
             this.totalItems = itemsTotal;
             this.loadedItems = itemsLoaded;
             this.loadingProgress = itemsLoaded / itemsTotal; // Calculate progress
-            console.log(`+++Loading started: ${itemsLoaded}/${itemsTotal}+++`);
+            console.log(`Loading started: ${itemsLoaded}/${itemsTotal}`);
                         
             this.showLoadingScreen();
             this.updateLoadingScreen(); // Update UI with current progress
@@ -47,7 +47,7 @@ export class LoadingManager {
         this.threeLoadingManager.onLoad = () => {
             this.isLoading = false;
             this.loadingProgress = 1; //giving that all assets are loaded set it to 1 (100%)
-            console.log('All assets loaded successfully!');
+            //console.log('All assets loaded successfully!');
             
             // Update loading screen to show 100% completion
             this.updateLoadingScreen();
@@ -64,7 +64,7 @@ export class LoadingManager {
                 if (this.onCompleteCallback) {
                     this.onCompleteCallback();
                 }
-            }, 3000); // 3000ms (3 seconds)
+            }, 2000); // 2000ms (2 seconds)
         };
         
         this.threeLoadingManager.onError = (url) => {
@@ -85,9 +85,9 @@ export class LoadingManager {
     showLoadingScreen() {
         const loadingScreen = document.getElementById('loadingScreen');
         if (loadingScreen) {
-            loadingScreen.style.display = 'flex';
+            loadingScreen.style.display = 'flex'; // center the content
             
-            // Ensure progress bar starts at 0% when showing
+            // progress bar starts at 0%
             const progressBar = document.getElementById('loadingProgressBar');
             const percentageText = document.getElementById('loadingPercentage');
             const assetsCounter = document.getElementById('assetsCounter');
@@ -112,7 +112,7 @@ export class LoadingManager {
     }
     
     hideLoadingScreen() {
-        //when is completed the loading screen is hidden
+        //when is **COMPLETED** the loading screen is hidden
         //infact is called by--> this.threeLoadingManager.onLoad triggered when all assets are loaded
         
         const loadingScreen = document.getElementById('loadingScreen');
@@ -159,13 +159,13 @@ export class LoadingManager {
         
         // Disable all keyboard input
         window.onkeydown = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); // key presses are ignored 
+            e.stopPropagation(); // Stop event from appearing 
             return false;
         };
         window.onkeyup = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); 
+            e.stopPropagation(); 
             return false;
         };
         
@@ -175,7 +175,7 @@ export class LoadingManager {
     }
     
     enableKeyboardInput() {
-        // Restore original keyboard event handlers
+        // Restore original keyboard event handlers --> only when the loading screen is hidden so loading is concluded
         window.onkeydown = this.originalKeydownHandler;
         window.onkeyup = this.originalKeyupHandler;
         
@@ -189,10 +189,9 @@ export class LoadingManager {
         e.stopPropagation();
         return false;
     }
-    
-    // Callback setters
-    // method used to set the callback status from outside this file
-    //setOnCompleteCallback is called in the main.js file to set the callback for when loading is complete
+
+    // Callback method used to set the callback status from outside this file
+    // setOnCompleteCallback is called in the main.js file to set the callback for when loading is complete
     setOnCompleteCallback(callback) {
         this.onCompleteCallback = callback;
     }
@@ -252,7 +251,7 @@ export class LoadingManager {
                 loadingText.style.animation = 'loadingPulse 0.8s ease-in-out infinite';
             }
             
-            // 3-second delay to ensure everything is really loaded
+            // 2-second delay to ensure everything is really loaded
             setTimeout(() => {
                 this.isLoading = false;
                 this.hideLoadingScreen();
@@ -260,7 +259,7 @@ export class LoadingManager {
                 if (this.onCompleteCallback) {
                     this.onCompleteCallback();
                 }
-            }, 3000); // 3 seconds delay
+            }, 2000); // 2 seconds delay
         }
     }
     

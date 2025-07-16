@@ -15,6 +15,7 @@ export class MapManager {
         this.player = player;
     }
 
+    //function called inside the loadMap of UI after the button is pressed
     loadMap(mapName) {
         // Clear the current map if it exists
         if (this.currentMap) {
@@ -65,10 +66,11 @@ export class MapManager {
         }
     }
 
+    // chiamato a sua volta da game.update() chiaato a sua volta da main.js in main loop animate()
     update(deltaTime) {
-        // Update the current map if it has an update method
+        // Update the current map, by calling its specific update method
         if (this.currentMap) {
-            this.currentMap.update(deltaTime, this.player);
+            this.currentMap.updateCurrentMap(deltaTime, this.player);
         }
     }
 

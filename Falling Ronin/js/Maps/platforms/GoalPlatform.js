@@ -102,31 +102,31 @@ export class GoalPlatform extends BasePlatform {
             object.userData.boundingBox = new THREE.Box3().setFromObject(object);
             this.scene.add(object);
             this.stoneLanterns.push(object);
-            console.log(`Loaded Lantern ${idx + 1} for goal platform ${this.platformId}`);
+            //console.log(`Loaded Lantern ${idx + 1} for goal platform ${this.platformId}`);
         };
 
         positions.forEach((pos, idx) => {
             if (this.assetManager) {
-            this.assetManager.loadOBJ(
-                'assets/models/Stone_Lantern_v2.obj',
-                (object) => configureLanternObject(object, pos, idx),
-                undefined,
-                (error) => {
-                console.error('Error loading Lantern_v2.obj:', error);
-                }
-            );
+                this.assetManager.loadOBJ(
+                    'assets/models/Stone_Lantern_v2.obj',
+                    (object) => configureLanternObject(object, pos, idx),
+                    undefined,
+                    (error) => {
+                    console.error('Error loading Lantern_v2.obj:', error);
+                    }
+                );
             } 
             else {
-            // Fallback to direct OBJ loader if assetManager is not available
-            const objLoader = new OBJLoader();
-            objLoader.load(
-                'assets/models/Stone_Lantern_v2.obj',
-                (object) => configureLanternObject(object, pos, idx),
-                undefined,
-                (error) => {
-                console.error('Error loading Lantern_v2.obj:', error);
-                }
-            );
+                console.warn("[GoalPlatform Lantern] WARNING: AssetManager not available, using fallback OBJLoader.");
+                const objLoader = new OBJLoader();
+                objLoader.load(
+                    'assets/models/Stone_Lantern_v2.obj',
+                    (object) => configureLanternObject(object, pos, idx),
+                    undefined,
+                    (error) => {
+                    console.error('Error loading Lantern_v2.obj:', error);
+                    }
+                );
             }
         });
     }
@@ -169,7 +169,7 @@ export class GoalPlatform extends BasePlatform {
             this.buddhistTemple.userData.boundingBox = new THREE.Box3().setFromObject(this.buddhistTemple);
 
             this.scene.add(this.buddhistTemple);
-            console.log(`Successfully loaded Buddhist Temple for goal platform ${this.platformId} at edge position`);
+            //console.log(`Successfully loaded Buddhist Temple for goal platform ${this.platformId} at edge position`);
         };
 
         // Use AssetManager if available, otherwise fallback to direct FBX loader
@@ -184,7 +184,7 @@ export class GoalPlatform extends BasePlatform {
             );
         } 
         else {
-            // Fallback to direct FBX loader if assetManager is not available
+            console.warn("[GoalPlatform Temple] WARNING: AssetManager not available, using fallback FBXLoader.");
             const fbxLoader = new FBXLoader();
             fbxLoader.load(
                 'assets/models/jp_building.fbx',

@@ -89,7 +89,7 @@ loadingManager.setOnCompleteCallback(() => {
         window.gameStarted = true;
         gameActive = true;
         window.pendingGameStart = false;
-        console.log('Game started after loading completion!');
+        console.log('- Game started after loading completion!');
     }
 });
 

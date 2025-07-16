@@ -14,12 +14,12 @@ export class RegularPlatform extends BasePlatform {
         const enlargedWidth = width * 1.3;
         const enlargedDepth = depth * 1.2;
 
-        // Load bamboo texture for the platform
         // Load bamboo texture using assetManager if available, otherwise use THREE.TextureLoader
         let bambooTexture;
         if (this.assetManager) {
             bambooTexture = this.assetManager.loadTexture('assets/textures/detailed_bamboo.jpg');
         } else {
+            console.warn("[RegularPlatform BambooTexture] WARNING: AssetManager not available, using fallback TextureLoader.");
             bambooTexture = new THREE.TextureLoader().load('assets/textures/detailed_bamboo.jpg');
         }
         if (bambooTexture) {
@@ -61,7 +61,6 @@ export class RegularPlatform extends BasePlatform {
             this.loadLamps(x, y, z, enlargedWidth, enlargedDepth);
             this.loadJapaneseTree(x, y, z, enlargedWidth, enlargedDepth);
         }
-        
     }
 
     // Override removeFromScene to also remove the arch model
@@ -131,7 +130,7 @@ export class RegularPlatform extends BasePlatform {
                 object.userData.boundingBox = new THREE.Box3().setFromObject(object);
                 this.scene.add(object);
                 this.lampModels.push(object);
-                console.log(`Loaded Lamp ${idx + 1} for main platform`);
+                //console.log(`Loaded Lamp ${idx + 1} for main platform`);
             };
             
             if (this.assetManager) {
@@ -145,6 +144,7 @@ export class RegularPlatform extends BasePlatform {
                 );
             } 
             else { //if assetManager is not available
+                console.warn("[RegularPlatform Lamp] WARNING: AssetManager not available, using fallback FBXLoader.");
                 const fbxLoader = new FBXLoader();
                 fbxLoader.load(
                     'assets/models/lamp.fbx',
@@ -201,7 +201,7 @@ export class RegularPlatform extends BasePlatform {
             object.userData.boundingBox = new THREE.Box3().setFromObject(object);
             this.scene.add(object);
             this.japaneseTreeModel = object;
-            console.log(`Loaded Japanese Tree for main platform`);
+            //console.log(`Loaded Japanese Tree for main platform`);
         };
         
         if (this.assetManager) {
@@ -218,6 +218,7 @@ export class RegularPlatform extends BasePlatform {
                 }
             );
         } else { //if assetManager is not available
+            console.warn("[RegularPlatform Tree] WARNING: AssetManager not available, using fallback FBXLoader.");
             const fbxLoader = new FBXLoader();
             fbxLoader.load(
                 'assets/models/Japanese_Tree.fbx',

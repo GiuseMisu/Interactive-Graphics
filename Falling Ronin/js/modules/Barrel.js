@@ -98,7 +98,7 @@ export class Barrel {
 
         // in the current frame 
         // Check for collision along the movement path BEFORE moving
-        if (this.checkPlayerCollisionAlongPath(prevPosition, nextPosition)) {
+        if (this.checkBarrelPlayerCollision(prevPosition, nextPosition)) {
             // Don't move, just bounce
             this.bounceOffPlayer();
             console.log("Barrel collision detected - bouncing off player!");
@@ -174,7 +174,7 @@ export class Barrel {
     }
 
     // Check collision along movement path (prevents "jumping over" player)
-    checkPlayerCollisionAlongPath(fromPos, toPos) {
+    checkBarrelPlayerCollision(fromPos, toPos) {
         // If no player is set, skip collision checks
         if (!this.player || !this.player.model) {
             return false;

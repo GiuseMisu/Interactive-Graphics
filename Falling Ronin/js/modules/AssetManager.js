@@ -54,7 +54,6 @@ export class AssetManager {
                 console.warn(`--> Texture not found: ${url}, in loadTexture of Assetmanager.js`);
             }
         );
-        
         return texture;
     }
     
@@ -102,7 +101,7 @@ export class AssetManager {
         }
         
         // Use standalone loader for models known to have texture issues
-        // the difference is that theCreate a separate FBX loader that doesn't use the LoadingManager --> it caused many problem idk why
+        // the difference is that theCreate a separate FBX loader that doesn't use the LoadingManager
         const loaderToUse = url.includes('Japanese_Tree.fbx') ? this.standaloneFBXLoader : this.fbxLoader;
         // Load texture if NOT cached
         loaderToUse.load(

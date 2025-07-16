@@ -39,7 +39,6 @@ export class TimedPlatform extends BasePlatform {
             animationProgress: this.animationProgress
         });
         
-        // Add to scene
         this.addToScene();
         
         console.log(`Created Timed Platform - ID: ${platformId}, Name: ${platformName}, Position: x=${x}, y=${y}, z=${z}`);
@@ -96,7 +95,7 @@ export class TimedPlatform extends BasePlatform {
             const secondsRemaining = Math.ceil(this.timeRemaining);
             const lastSecond = Math.ceil(this.timeRemaining + deltaTime);
             if (secondsRemaining !== lastSecond && secondsRemaining > 0) {
-                console.log(`Platform "${this.platformName}" disappearing in ${secondsRemaining} seconds!`);
+                console.log(`"${this.platformName}" disappearing in ${secondsRemaining} seconds!`);
             }
 
             // Visual warning effects as time runs out
@@ -121,7 +120,7 @@ export class TimedPlatform extends BasePlatform {
                 // Platform has disappeared
                 this.timerState = 'disappeared';
                 this.mesh.visible = false; //--> you cannot interact with the platform anymore
-                console.log(`Platform "${this.platformName}" has disappeared!`);
+                console.log(`"${this.platformName}" has disappeared!`);
             }
             else {
                 // Animate scaling down and fading out
@@ -158,7 +157,6 @@ export class TimedPlatform extends BasePlatform {
         if (!this.scene.children.includes(this.mesh)) {
             this.scene.add(this.mesh);
         }
-        
         console.log(`Platform "${this.platformName}" has been reset!`);
     }
 

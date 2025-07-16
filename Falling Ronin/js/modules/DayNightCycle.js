@@ -7,8 +7,7 @@ export class DayNightCycle {
         
         // Time management
         this.time = 0; // Current time in the cycle (0-1)
-        this.cycleDuration = 30; // 120 (default) Duration in seconds for full cycle
-        this.timeSpeed = 1; // Speed multiplier
+        this.cycleDuration = 60; // 120 (default) Duration in seconds for full cycle
         
         // Lighting
         this.sunLight = null;
@@ -42,10 +41,15 @@ export class DayNightCycle {
                     moon: new THREE.Color(0x7F8C8D),   // Lighter gray near moon
                     sun: new THREE.Color(0x5D6D7E)     // Lighter fallback color
                 },
-                sunrise: {
-                    top: new THREE.Color(0x5D6D7E),    // Lighter gray-blue
-                    horizon: new THREE.Color(0xF7DC6F), // Golden yellow
-                    sun: new THREE.Color(0xF1948A)     // Soft pink-orange
+                mutedSunset: {
+                    top: new THREE.Color(0x34495E),
+                    horizon: new THREE.Color(0xE67E22),
+                    sun: new THREE.Color(0xF39C12)
+                },
+                twilightColors: {
+                    top: new THREE.Color(0x2C3E50),
+                    horizon: new THREE.Color(0x34495E),
+                    sun: new THREE.Color(0x5D6D7E)
                 }
             };
         
@@ -65,12 +69,16 @@ export class DayNightCycle {
         // shadow PROPERTIES: BIGGER FOR SUN THEN MOON
         this.sunLight.shadow.mapSize.width = 2048;
         this.sunLight.shadow.mapSize.height = 2048;
+
         this.sunLight.shadow.camera.near = 0.1;
-        this.sunLight.shadow.camera.far = 50;
-        this.sunLight.shadow.camera.left = -20;
-        this.sunLight.shadow.camera.right = 20;
-        this.sunLight.shadow.camera.top = 20;
-        this.sunLight.shadow.camera.bottom = -20;
+        this.sunLight.shadow.camera.far = 150; // Increased for better coverage
+        this.sunLight.shadow.camera.left = -80;
+        this.sunLight.shadow.camera.right = 80;
+        this.sunLight.shadow.camera.top = 80;
+        this.sunLight.shadow.camera.bottom = -80;
+
+        this.sunLight.shadow.bias = -0.0005; // shadows are less instense
+        this.sunLight.shadow.darkness = 0.1; // Make shadows less dark
         this.scene.add(this.sunLight);
         
         // Moon light (directional, brighter for better night visibility)
@@ -78,8 +86,18 @@ export class DayNightCycle {
         this.moonLight.castShadow = true; // Enable to see shadows produced by moon light
 
         // shadow PROPERTIES: BIGGER FOR SUN THEN MOON
-        this.moonLight.shadow.mapSize.width = 1024;
-        this.moonLight.shadow.mapSize.height = 1024;
+        this.moonLight.shadow.mapSize.width = 1408; // Smaller than sun light
+        this.moonLight.shadow.mapSize.height = 1408;
+
+        this.moonLight.shadow.camera.near = 0.1;
+        this.moonLight.shadow.camera.far = 150; // Increased for better coverage
+        this.moonLight.shadow.camera.left = -80;
+        this.moonLight.shadow.camera.right = 80;
+        this.moonLight.shadow.camera.top = 80;
+        this.moonLight.shadow.camera.bottom = -80;
+
+        this.moonLight.shadow.bias = -0.0005; // shadows are less instense
+        this.moonLight.shadow.darkness = 0.1; // Make shadows less dark
         this.scene.add(this.moonLight);
         
         // Ambient light 
@@ -90,7 +108,7 @@ export class DayNightCycle {
         //NO SHADOW SET UP FOR THE AMBIENT LIGHT
     }
     
-
+    //================================== Creation section ==================================
     
     createSkyGradient() {
         // Sphere for sky gradient background
@@ -100,30 +118,34 @@ export class DayNightCycle {
         const vertexColors = [];
         const positionAttribute = skyGeometry.attributes.position;
         
+        //let's iterate all over the vertices of the sphere
         for (let i = 0; i < positionAttribute.count; i++) {
             //!!each vertex has a color based on its height to make the gradient!!
             
-            const y = positionAttribute.getY(i);
-            const normalizedY = (y + 80) / 160; // Normalize to 0-1
+            const y = positionAttribute.getY(i); //take the current vertex y coord
+            const normalizedY = (y + 80) / 160; // Normalize to 0-1 (vertical range)
 
             const color = new THREE.Color();
             
-            //blend the color defined for each phase
+            //blend the color defined for each phase --> LERPING the colors based on height
+            //so you good two posssible color extreme 1) horizon color and 2) top color
+            //the normalizedY is used to blend the two colors based on the height of the vertex
+            //SI INIZIA CON DAY PHASE
             color.lerpColors(this.skyColors.day.horizon, this.skyColors.day.top, normalizedY);
-            vertexColors.push(color.r, color.g, color.b); //Changing the color based on height
+            vertexColors.push(color.r, color.g, color.b); //assign to the current vertex the color based on its height
         }
         skyGeometry.setAttribute('color', new THREE.Float32BufferAttribute(vertexColors, 3));
         
         const skyMaterial = new THREE.MeshBasicMaterial({
             vertexColors: true, // Use vertex colors for gradient
-            side: THREE.BackSide,
+            side: THREE.BackSide, //visible only from inside the sphere
             fog: false
         });
         
         this.skyGradientMesh = new THREE.Mesh(skyGeometry, skyMaterial);
         this.scene.add(this.skyGradientMesh); // add to the scene the sky gradient mesh (sphere)
         
-        // Set initial background color
+        //this is outside the defined sphere inserted [will never be seen] just for security
         this.scene.background = this.skyColors.day.horizon;
         
         // Force initial sky gradient update
@@ -136,9 +158,7 @@ export class DayNightCycle {
     createRealisticSun() {
         // sphere 
         const sunGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-        
-        //sunGeometry.computeVertexNormals(); // not needed for basic material
-        
+
         // Simple yellow/orange material
         const sunMaterial = new THREE.MeshBasicMaterial({
             color: 0xFFD700,  // Golden yellow
@@ -156,8 +176,6 @@ export class DayNightCycle {
     createRealisticMoon() {
         // sphere
         const moonGeometry = new THREE.SphereGeometry(0.8, 32, 32);
-
-        //moonGeometry.computeVertexNormals(); // not needed for basic material
 
         // Simple gray material
         const moonMaterial = new THREE.MeshBasicMaterial({
@@ -211,17 +229,21 @@ export class DayNightCycle {
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
     }
+
+    //================================== Update section ==================================
     
     update(deltaTime) {
         // Update time
-        this.time += (deltaTime * this.timeSpeed) / this.cycleDuration;
-        if (this.time > 1) this.time -= 1;
+        this.time += (deltaTime) / this.cycleDuration; //time normalized to 0-1
+        if (this.time > 1) {
+            this.time = this.time - 1; // bring it back to 0-1 range
+        }
         
         this.updateCelestialPositions();
         this.updateSunMoonVisibility(); //switch what is visible based on sun/moon height
-        this.updateStarEffects(deltaTime);
-        this.updateLighting();
-        this.updateSkyGradient();
+        this.updateStarEffects(deltaTime); //switch star visibility based on sun height
+        this.updateLighting(); // change the intensity and color of the lights based on sun/moon height
+        this.updateSkyGradient(); // change the sky gradient based on sun/moon height
     }
 
     updateSunMoonVisibility() {
@@ -233,9 +255,9 @@ export class DayNightCycle {
     }
     
     updateStarEffects(deltaTime) {
-        const sunHeight = this.sun.position.y / 30;
+        const sunHeight = this.sun.position.y / 50; //toned down to avoid late stars visibility
         
-        // Stars visibility and twinkling
+        // Stars visibility when sun is not visible -> not when moon is visible cause moon and sun can be presente at the same time
         if (sunHeight < -0.1) {
             this.stars.visible = true;
             this.stars.material.opacity = 0.7 + Math.sin(this.time * 8) * 0.2;
@@ -255,15 +277,15 @@ export class DayNightCycle {
         this.sun.position.set(
             Math.cos(sunAngle) * radius + xOffset,
             Math.sin(sunAngle) * radius * 0.7 + yOffset, // Flatten arc slightly
-            Math.sin(sunAngle * 0.2) * 3 // Small depth variation due to the distance from the center
+            Math.sin(sunAngle * 0.2) * 3 // to avoid perfect 2d arch trajectory-> adds small lateral variation
         );
 
         // Moon follows opposite path with small offset
-        const moonAngle = sunAngle + Math.PI;
+        const moonAngle = sunAngle + Math.PI; // 180 degrees offset for moon
         this.moon.position.set(
             Math.cos(moonAngle) * radius + xOffset,
             Math.sin(moonAngle) * radius * 0.7 + yOffset,
-            Math.sin(moonAngle * 0.3) * 2 // Different depth pattern
+            Math.sin(moonAngle * 0.3) * 2 // to avoid perfect 2d arch trajectory-> adds small lateral variation
         );
 
         // Update light positions, clone the sun position for the light source positions
@@ -285,13 +307,13 @@ export class DayNightCycle {
         if (this.sun.visible && sunHeight > 0) {
             this.sunLight.intensity = Math.max(minBaseIntensity, sunHeight * 1.5); 
         } else {
-            this.sunLight.intensity = minBaseIntensity * 0.5; // Keep some minimal sun light even when off
+            this.sunLight.intensity = 0; // [old] minBaseIntensity * 0.5; // Keep some minimal sun light even when off
         }
         
         if (this.moon.visible && moonHeight > 0) {
             this.moonLight.intensity = Math.max(minBaseIntensity, moonHeight * 1.5); 
         } else {
-            this.moonLight.intensity = minBaseIntensity * 0.5; // Keep some minimal moon light even when off
+            this.moonLight.intensity = 0; // [old] minBaseIntensity * 0.5; // Keep some minimal moon light even when off
         }
         
         // ambient light higher values
@@ -309,7 +331,7 @@ export class DayNightCycle {
         
         // Enhanced colors for better visibility with brighter tones
         if (this.sun.visible && sunHeight > 0.1) {
-            this.sunLight.color.setHex(0xFFFFF0); // Slightly warmer daylight
+            this.sunLight.color.setHex(0xFFFFF0); // warmer daylight
             this.ambientLight.color.setHex(0xB0E0FF); // Brighter sky blue
         } else if (this.sun.visible && sunHeight > 0) {
             this.sunLight.color.setHex(0xFFAA77); // Brighter, warmer orange for sunset
@@ -320,25 +342,13 @@ export class DayNightCycle {
         } else {
             this.ambientLight.color.setHex(0x9CB0C8); // Much brighter gray-blue for transitions
         }
-
-        // Apply improved shadow settings for better visibility
-        if (this.sunLight.shadow) {
-            this.sunLight.shadow.bias = -0.0005; // shadows are less instense
-            this.sunLight.shadow.darkness = 0.1; // Make shadows less dark
-        }
-        if (this.moonLight.shadow) {
-            this.moonLight.shadow.bias = -0.0005;
-            this.moonLight.shadow.darkness = 0.1;
-        }
     }
     
-        
-
     updateSkyGradient() {
-        const sunHeight = this.sun.position.y / 60;
+        const sunHeight = this.sun.position.y / 60; 
 
-        const colorAttribute = this.skyGradientMesh.geometry.attributes.color;
-        const positionAttribute = this.skyGradientMesh.geometry.attributes.position;
+        const colorAttribute = this.skyGradientMesh.geometry.attributes.color; //  color attribute of the sky gradient mesh
+        const positionAttribute = this.skyGradientMesh.geometry.attributes.position; // position attribute of the sky gradient mesh
 
         let currentColors;
 
@@ -356,28 +366,18 @@ export class DayNightCycle {
         }
         else if (sunHeight > -0.05) {
             const factor = (sunHeight + 0.05) / 0.1; //--> makes the transition smoother
-            const mutedSunset = {
-                top: new THREE.Color(0x34495E),
-                horizon: new THREE.Color(0xE67E22),
-                sun: new THREE.Color(0xF39C12)
-            };
             currentColors = {
-                top: new THREE.Color().lerpColors(this.skyColors.night.top, mutedSunset.top, factor),
-                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, mutedSunset.horizon, factor),
-                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, mutedSunset.sun, factor)
+                top: new THREE.Color().lerpColors(this.skyColors.night.top, this.skyColors.mutedSunset.top, factor),
+                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.mutedSunset.horizon, factor),
+                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, this.skyColors.mutedSunset.sun, factor)
             };
         } 
         else if (sunHeight > -0.2) {
             const factor = (sunHeight + 0.2) / 0.15; //--> makes the transition smoother
-            const twilightColors = {
-                top: new THREE.Color(0x2C3E50),
-                horizon: new THREE.Color(0x34495E),
-                sun: new THREE.Color(0x5D6D7E)
-            };
             currentColors = {
-                top: new THREE.Color().lerpColors(this.skyColors.night.top, twilightColors.top, factor),
-                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, twilightColors.horizon, factor),
-                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, twilightColors.sun, factor)
+                top: new THREE.Color().lerpColors(this.skyColors.night.top, this.skyColors.twilightColors.top, factor),
+                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.twilightColors.horizon, factor),
+                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, this.skyColors.twilightColors.sun, factor)
             };
         } 
         else {
@@ -390,11 +390,12 @@ export class DayNightCycle {
             const normalizedY = (y + 80) / 160;
 
             const baseColor = new THREE.Color();
+            //once choosed the color set [currentColors] based on the height of the sun 
+            // for each vertex interpolation based on the height of the vertex
             baseColor.lerpColors(currentColors.horizon, currentColors.top, normalizedY);
 
-            colorAttribute.setXYZ(i, baseColor.r, baseColor.g, baseColor.b);
+            colorAttribute.setXYZ(i, baseColor.r, baseColor.g, baseColor.b); // set the color of the vertex
         }
-
         colorAttribute.needsUpdate = true;
     }
 

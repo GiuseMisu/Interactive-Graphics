@@ -14,10 +14,9 @@ export class Shuriken {
         this.rotationSpeedX = 4.0;      // rotation around X-axis
         this.rotationSpeedY = 6.0;      // rotation around Y-axis
         this.heightOffset = 1.5;        // Height above platform
-        this.time = 0;                  // Time accumulator for animations
         
         // Path properties
-        this.pathPoints = []; // Array to hold ALL THE path points
+        this.pathPoints = []; // Array to hold ALL THE path points -> composto da 8 elementi per piattaforma
         this.currentPathIndex = startingPathIndex; // Start from specified index
         this.pathProgress = 0; // 0 to 1 between current and next point of the shuriken path
         
@@ -68,7 +67,7 @@ export class Shuriken {
 
         // Create center hole
         const hole = new THREE.Path();
-        hole.absarc(0, 0, holeRadius, 0, Math.PI * 2, false);
+        hole.absarc(0, 0, holeRadius, 0, Math.PI * 2, false); // Create a circular hole in the center
         shape.holes.push(hole);
 
         // Extrude the shape to create 3D geometry
@@ -128,7 +127,8 @@ export class Shuriken {
         const pathY = y + this.heightOffset; // offset to make it floating
         
         // Create rectangular path points, not directly on the border but slightly offset inside
-        //STARTING FROM THE CENTER ADD THE WIDTH AND DEPTH OF THE PLATFORM AND REMOVE THE MARGIN
+        // STARTING FROM THE CENTER COORDINATES OF THE PLATFORM ADD THE WIDTH AND DEPTH OF THE PLATFORM (TO GET EDGES) 
+        // AND REMOVE THE MARGIN TO MAKE IT A BIT INSIDE THE PLATFORM
         this.pathPoints = [
             // Front edge
             new THREE.Vector3(x + width/2 - margin, pathY, z + depth/2 - margin/2), // Front-right part
@@ -157,7 +157,8 @@ export class Shuriken {
     update(deltaTime, player = null) {
 
         this.player = player; //take the current player reference to be always updated to check collision
-        this.time += deltaTime;  // increase time
+        
+        //not called this.time += deltaTime;  // increase time
         
         // Update position along path with smooth transitions
         this.updateMovement(deltaTime);
@@ -166,19 +167,19 @@ export class Shuriken {
         this.updateRotations(deltaTime);
                 
         // Check collision with player
-        this.checkPlayerCollision();
+        this.checkShurikenPlayerCollision();
     }
     
     updateMovement(deltaTime) {
         // If no path points shuriken is defined, do nothing
         if (this.pathPoints.length < 2) return;
         
-        // Calculate movement distance this frame
-        const moveDistance = this.speed * deltaTime;
-        
+        // Calculate movement distance for this frame --> will be summed up to the pathProgress to increase the movement 
+        const moveDistance = this.speed * deltaTime;  
+
         // Get current and next path points (always clockwise )
         const currentPoint = this.pathPoints[this.currentPathIndex];
-        const nextIndex = (this.currentPathIndex + 1) % this.pathPoints.length;
+        const nextIndex = (this.currentPathIndex + 1) % this.pathPoints.length; // % needed to loop around the path when reaches the last point
         const nextPoint = this.pathPoints[nextIndex];
         
         // Calculate distance between current and next point in the current frame
@@ -200,31 +201,28 @@ export class Shuriken {
         // Linear interpolation between current and next path point
         const currentSegmentStart = this.pathPoints[this.currentPathIndex];
         const currentSegmentEnd = this.pathPoints[nextIndex];
-        let t = this.pathProgress;
+        let t = this.pathProgress; // in the lerp function is needed to interpolate between the two points
         this.mesh.position.lerpVectors(currentSegmentStart, currentSegmentEnd, t);
     }
     
     updateRotations(deltaTime) {
-        // Primary spinning rotation (Z-axis)
+        // Primary spinning rotation (Z-axis) //not the spinning velocity but the orientation is updated
         this.mesh.rotation.z += this.rotationSpeed * deltaTime;
         
         // Secondary rotation animations for more dynamic effect
         this.mesh.rotation.x += this.rotationSpeedX * deltaTime;
         this.mesh.rotation.y += this.rotationSpeedY * deltaTime;
-
-        //insert a console log to check the rotation
-        console.log(`Shuriken rotation - X: ${this.mesh.rotation.x.toFixed(2)},\n Y: ${this.mesh.rotation.y.toFixed(2)},\n Z: ${this.mesh.rotation.z.toFixed(2)}`);
     }
     
     
     // ============================================== COLLISION METHODS ============================================    
     // function called in the update method to check collision with player
-    checkPlayerCollision() {
+    checkShurikenPlayerCollision() {
         if (!this.player || !this.player.model) return;
         
         // Cooldown check, otherwise multiple times in a row
         const currentTime = Date.now();
-        if (currentTime - this.lastCollisionTime < this.collisionCooldown) return;
+        if (currentTime - this.lastCollisionTime < this.collisionCooldown) return; // Prevent multiple hits in a short time
         
         // Get positions of shuriken and player
         const shurikenPos = this.mesh.position;

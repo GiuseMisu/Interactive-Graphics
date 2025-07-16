@@ -390,6 +390,7 @@ export class TrapDoorSpawner {
         }
     }
     
+    //function called inisde the updateOpen -> after the opening of the trapdoor
     spawnBarrel() {
         //here's the barrel constructor that calls the createBarrel method
         const barrel = new Barrel(this.scene);

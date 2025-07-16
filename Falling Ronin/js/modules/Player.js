@@ -4,26 +4,33 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 export class Player {
     constructor(scene, assetManager = null) {
         this.scene = scene;
-        this.assetManager = assetManager;
+        this.assetManager = assetManager; // in order to load the player model
+
+        //ANIMATION PROPERTIES
+        this.onGround = true;
+        this.isDoubleJumping = false;
+        this.canDoubleJump = false;    
+        this.sprinting = false; // Added for sprint state    
+        this.animationState = 'idle';
+        this.animationTime = 0;
+        this.clock = new THREE.Clock();
 
         this.moveSpeed = 0.1;
         this.sprintSpeed = 0.25;
+        this.jumpStrength = 0.22;
         this.currentSpeed = this.moveSpeed;
-        this.sprinting = false; // Added for sprint state
         this.sprintTimeout = null; // Added for sprint duration
         this.animationSpeedMultiplier = 1.1; // Default animation speed       
        
         // Physics properties
         this.velocityY = 0;
         this.gravity = -0.01; // low gravity to allow big jumps for the player
-        this.jumpStrength = 0.22;
-        this.onGround = true;
-        this.canDoubleJump = false;        // Collision properties
+
+         
         this.platformManager = null; // Will be set by the game
         this.playerBoundingBox = new THREE.Box3();
         this.playerSize = { width: 0.5, height: 1.8, depth: 0.5 }; // Player dimensions
         this.playerFeetOffset = 1.75; // Reduced from 0.9 - adjust based on your model
-        this.respawnThreshold = -10; // Y position below which player respawns
         
         // Checkpoint system
         this.gameState = null; // Will be set by the game
@@ -38,14 +45,12 @@ export class Player {
         // Barrel collision properties
         this.lastBarrelCollisionTime = 0; // Prevent spam collision detection
         this.lastSpacePress = 0; // Already present, can be used for double tap if needed, though current jump logic handles it
-        this.jumpStartTime = 0; // Added for jump animation timing if needed
-
+        
         // Death tracking
         this.gameUI = null; // Will be set by the game to reference UI for death counter
         this.lastDeathTime = 0; // Prevent rapid death counting
-        // New properties for jump animations
-        this.isDoubleJumping = false;
-
+        this.respawnThreshold = -10; // Y position below which player respawns
+        
         // Double jump targets: right arm up from front, left leg forward and bent
         this.doubleJumpRightArmTargetZ = -Math.PI / 2.5; // Target Z rotation for right arm forward raise (more upward)
         this.doubleJumpLeftArmTargetZ = Math.PI / 6; // Target Z rotation for left arm (small backward movement)
@@ -60,14 +65,10 @@ export class Player {
         this.normalJumpLeftArmTargetZ = Math.PI / 12; // Target Z rotation for left arm (small movement)
         this.normalJumpRightArmTargetZ = -Math.PI / 12; // Target Z rotation for right arm (small forward movement)
 
-
         this.model = null;
         this.bones = {};
         this.boneInitialRotations = {}; // Store initial bone rotations
-        this.animationState = 'idle';
-        this.animationTime = 0;
-        this.clock = new THREE.Clock();
-
+        
         this.boneNames = {
             head: 'mixamorigHead',
             spine: 'mixamorigSpine',
@@ -117,22 +118,11 @@ export class Player {
             );
         } 
         else { //if assetManager is not available
+            console.warn("[PlayerModel] WARNING: AssetManager not available, using fallback FBXLoader.");
             const fbxLoader = new FBXLoader();
             fbxLoader.load(
                 'assets/models/ninja.fbx',
                 (object) => {
-                    // Apply shadow settings manually for fallback loader
-                    if (window.game && window.game.gameState && window.game.gameState.getShadowManager()) {
-                        window.game.gameState.getShadowManager().processLoadedObject(object);
-                    } else {
-                        // Default shadow settings if shadow manager is not available
-                        object.traverse((child) => {
-                            if (child.isMesh) {
-                                child.castShadow = true;
-                                child.receiveShadow = true;
-                            }
-                        });
-                    }
                     loadPlayerModel(object);
                 },
                 undefined,
@@ -242,8 +232,10 @@ export class Player {
 
         if (!this.model) return;
 
-        const animationDeltaTime = this.clock.getDelta();
-        this.animationTime += animationDeltaTime * 5 * this.animationSpeedMultiplier;
+        const animationDeltaTime = this.clock.getDelta(); //time since last frame
+        
+        //increasing value needed to regulat the animation (used as input of sin-cos for animation)
+        this.animationTime += animationDeltaTime * 5 * this.animationSpeedMultiplier; //when sprinting animationSpeedMultiplier is increased
 
         // Store previous position for collision rollback
         const previousPosition = this.model.position.clone();
@@ -251,8 +243,8 @@ export class Player {
         // Handle rotation
         const rotateSpeed = 0.05;
         //if keys a or d are pressed (so place to True)
-        if (keys.a) this.model.rotation.y += rotateSpeed;
-        if (keys.d) this.model.rotation.y -= rotateSpeed;
+        if (keys.a) this.model.rotation.y += rotateSpeed; //increase rotation = to the left
+        if (keys.d) this.model.rotation.y -= rotateSpeed; //decrease rotation = to the right
 
         // Handle movement with collision detection
         let moveDir = 0;
@@ -261,9 +253,12 @@ export class Player {
         if (keys.s) moveDir -= 1;
 
         if (moveDir !== 0) {
-            const angle = this.model.rotation.y;
-            const moveX = Math.sin(angle) * this.currentSpeed * moveDir * deltaTime * 60;
-            const moveZ = Math.cos(angle) * this.currentSpeed * moveDir * deltaTime * 60;
+            const angle = this.model.rotation.y; // previously increased by rotateSpeed
+
+            //sin and cos needed in order to move the player in the direction it is facing --> otherwise unnatural
+            //current speed changes between moveSpeed (0.1) and sprintSpeed (0.25) based on sprinting_state
+            const moveX = Math.sin(angle) * this.currentSpeed * moveDir;
+            const moveZ = Math.cos(angle) * this.currentSpeed * moveDir;
 
             // Store current position before attempting movement
             const originalX = this.model.position.x;
@@ -282,7 +277,7 @@ export class Player {
             }
 
             // Try Y movement (jumping)
-            this.model.position.y += this.velocityY * deltaTime * 60;
+            this.model.position.y += this.velocityY;
 
             // Y-axis collision resolution with imported models ---
             const yCorrection = this.checkImportedModelCollisionY(previousPosition.y);
@@ -322,22 +317,15 @@ export class Player {
         // Apply gravity
         this.velocityY += this.gravity; 
         
-        // Store position before vertical movement
-        const preVerticalPosition = this.model.position.clone();
-        
         // Apply vertical velocity, UPDATE Y position
         this.model.position.y += this.velocityY;
 
-        // Y-axis collision with imported models
-        // if null is returned, no collision detected
+        //was called also iside the update function, but it moved
         const yCorrection = this.checkImportedModelCollisionY(previousY);
         if (yCorrection !== null) {
             this.model.position.y = yCorrection;
             this.velocityY = 0;
         }
-
-        // Check for platform collision
-        const platformHeight = this.checkPlatformCollision();
         
         // Check if player is trying to fall through a platform from above
         if (this.velocityY < 0) { // Player is falling
@@ -375,9 +363,15 @@ export class Player {
             }
         }
         
-        // Original platform collision logic for edge cases
+        // Finds the highest platform the player is currently standing on (for gravity/landing).
+        const platformHeight = this.getHighestStandingPlatformY();
+        
+        //===============================================
+        //LAST CHECK FOR FALLING AND LANDING ON PLATFORM
+        //check if player's feet are at or below the top of the highest platform they could be standing on 
         if (this.model.position.y - this.playerFeetOffset <= platformHeight + 0.01) { // Small tolerance 
-            // Calculate the correct position
+            
+            // Snaps the player's Y position to exactly on top of the platform
             const correctY = platformHeight + this.playerFeetOffset;
             
             // Only reposition if we're not already very close to the correct position
@@ -431,7 +425,7 @@ export class Player {
                 const platformTop = platform.position.y + (platform.geometry.parameters.height / 2);
                 const playerFeet = this.getPlayerFeetPosition().y;
 
-                if (this.checkPlayerPlatformCollision(platform) && this.onGround && Math.abs(playerFeet - platformTop) < 0.1) {
+                if (this.checkPlayerPlatformCollision_X_Z(platform) && this.onGround && Math.abs(playerFeet - platformTop) < 0.1) {
                     onCheckpointPlatform = true;
                     this.checkpointStayTimer += deltaTime;
                     
@@ -471,7 +465,7 @@ export class Player {
                 const platformTop = platform.position.y + (platform.geometry.parameters.height / 2);
                 const playerFeet = this.getPlayerFeetPosition().y;
 
-                if (this.checkPlayerPlatformCollision(platform) && this.onGround && Math.abs(playerFeet - platformTop) < 0.1) {
+                if (this.checkPlayerPlatformCollision_X_Z(platform) && this.onGround && Math.abs(playerFeet - platformTop) < 0.1) {
                     onGoalPlatform = true;
                     this.goalStayTimer += deltaTime;
 
@@ -948,7 +942,7 @@ export class Player {
     }   
     
     
-    checkPlatformCollision() {
+    getHighestStandingPlatformY() {
         if (!this.model || !this.platformManager) {
             return -50; // Much lower value to ensure respawn triggers
         }
@@ -963,26 +957,24 @@ export class Player {
         this.updatePlayerBoundingBox();
 
         let highestPlatform = -50; // Much lower default to ensure respawn triggers
-        let foundCollision = false;
         for (const platform of platforms) {
-            if (this.checkPlayerPlatformCollision(platform)) {
-                // Get the top of the platform
+            if (this.checkPlayerPlatformCollision_X_Z(platform)) { //se c'é overlap su x and z check also overlap sulle Y
+                // Get the top of the platform                 
                 const platformTop = platform.position.y + (platform.geometry.parameters.height / 2);
-                // Only consider platforms that the player can land on
+                
                 // Player's feet must be above the platform or very close to it
                 const playerFeetY = playerPos.y - this.playerFeetOffset;
                 const tolerance = 1.0; // Allow player to be slightly above platform
                 
                 if (playerFeetY >= platformTop - tolerance && platformTop > highestPlatform) {
                     highestPlatform = platformTop;
-                    foundCollision = true;                    
                 }
             }
         }       
         return highestPlatform;
     }    
 
-    checkPlayerPlatformCollision(platform) {
+    checkPlayerPlatformCollision_X_Z(platform) {
         if (!platform || !platform.geometry || !platform.geometry.parameters) return false;
 
         const platformPos = platform.position;
@@ -1014,7 +1006,7 @@ export class Player {
             playerBounds.maxZ > platformBounds.minZ - tolerance &&
             playerBounds.minZ < platformBounds.maxZ + tolerance
         );
-
+        //returns boolean
         return horizontalOverlap;
     }    
 
@@ -1178,7 +1170,8 @@ export class Player {
 
         let highestPlatformTop = null;
         for (const platform of platforms) {
-            if (this.checkPlayerPlatformCollision(platform)) {
+            if (this.checkPlayerPlatformCollision_X_Z(platform)) { //controlla che la x e z siano overlappate con platform
+                
                 const platformTop = platform.position.y + (platform.geometry.parameters.height / 2);
                 // Check if we crossed through this platform from above
                 if (previousFeetY >= platformTop && playerFeetY < platformTop) {
@@ -1209,12 +1202,12 @@ export class Player {
             const platformPos = platform.position;
             const g = platform.geometry.parameters;
             const platformBox = new THREE.Box3(
-                new THREE.Vector3(
+                new THREE.Vector3( //bottom left back of the platform
                     platformPos.x - g.width / 2,
                     platformPos.y - g.height / 2,
                     platformPos.z - g.depth / 2
                 ),
-                new THREE.Vector3(
+                new THREE.Vector3( //top right front of the platform
                     platformPos.x + g.width / 2,
                     platformPos.y + g.height / 2,
                     platformPos.z + g.depth / 2

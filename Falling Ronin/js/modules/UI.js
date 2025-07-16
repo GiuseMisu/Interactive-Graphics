@@ -291,8 +291,9 @@ export class UI {
         console.log(`Music ${isEnabled ? 'enabled' : 'disabled'}`);
     }
     
+    //function called when pressed the button of the map choice
     loadMap(mapName) {
-        // Start a fresh loading session
+        // Start a new loading session
         if (window.loadingManager) {
             window.loadingManager.startFreshLoading();
         }

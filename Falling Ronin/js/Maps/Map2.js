@@ -13,7 +13,7 @@ export class Map2 {
         this.scene = scene;
         this.gameState = gameState;
         this.assetManager = assetManager;
-        //this.shadowManager = gameState ? gameState.shadowManager : null;
+        
         this.platforms = [];
         this.barrels = [];
         this.shurikens = [];
@@ -54,22 +54,6 @@ export class Map2 {
         this.addPlatform(108, baseY, -72, 36, 40, false, 'Goal Platform', true, false);
     }
 
-    createTrapDoorSpawner(x, y, z) {
-        const spawnerY = y + 0.25; // Platform surface
-        
-        // callback function to handle barrel spawning
-        const barrelSpawnCallback = (barrel) => {
-            this.barrels.push(barrel);
-        };
-        
-        const orientation = 'west';
-        const frequency_barrel_spawn = 0.25; // 3.0 is the Default frequency
-        const bounciness = 0.9;
-        const friction = 0.3;
-
-        const spawner = new TrapDoorSpawner(this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction); 
-        this.trapDoorSpawners.push(spawner);
-    }
 
     addPlatform(x, y, z, width, depth, isCheckpoint = false, platformName = '', isGoal = false, isTimed = false) {
         return MapTools.addPlatform(
@@ -84,12 +68,8 @@ export class Map2 {
         );
     }
 
-    createShuriken(platformIndex) {
-        //MapTools.createShuriken(this.scene, this.platforms, this.shurikens, this.shadowManager, platformIndex);
-        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
-    }
 
-    update(deltaTime, player = null) {
+    updateCurrentMap(deltaTime, player = null) {
         // Update all trap door spawners
         this.trapDoorSpawners.forEach(spawner => {
             spawner.update(deltaTime);
@@ -109,6 +89,28 @@ export class Map2 {
             MapTools.checkTimedPlatformCollision(this.timedPlatforms, player);
         }
     }
+
+    createShuriken(platformIndex) {
+        MapTools.createShuriken(this.scene, this.platforms, this.shurikens, platformIndex);
+    }
+
+    createTrapDoorSpawner(x, y, z) {
+        const spawnerY = y + 0.25; // Platform surface
+        
+        // callback function to handle barrel spawning
+        const barrelSpawnCallback = (barrel) => {
+            this.barrels.push(barrel);
+        };
+        
+        const orientation = 'west';
+        const frequency_barrel_spawn = 0.25; // 3.0 is the Default frequency
+        const bounciness = 0.9;
+        const friction = 0.3;
+
+        const spawner = new TrapDoorSpawner(this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction); 
+        this.trapDoorSpawners.push(spawner);
+    }
+
 
     clear() {
         // Remove all platforms from the scene
@@ -138,14 +140,6 @@ export class Map2 {
     // Essential wrapper methods used by external files
     getAllPlatforms() {
         return MapTools.getAllPlatforms(this.platforms);
-    }
-
-    getBarrels() {
-        return MapTools.getBarrels(this.barrels);
-    }
-    
-    getCheckpointPlatforms() {
-        return MapTools.getCheckpointPlatforms(this.checkpointPlatforms);
     }
 
     resetAllTimedPlatforms() {

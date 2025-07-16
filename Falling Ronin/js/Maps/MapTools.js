@@ -46,11 +46,6 @@ export class MapTools {
             .map(platform => platform.mesh);
     }
 
-    // Method to get checkpoint platforms
-    static getCheckpointPlatforms(checkpointPlatforms) {
-        return checkpointPlatforms;
-    }
-
     // ======================= TIMED PLATFORM LOGIC =======================
 
     // Method to check if player is on a timed platform and activate timer
@@ -135,11 +130,6 @@ export class MapTools {
     }
 
     // ======================= BARREL LOGIC =======================
-
-    // Method to get all barrels for collision detection
-    static getBarrels(barrels) {
-        return barrels;
-    }
 
     // barrel update logic
     static updateBarrels(scene, barrels, deltaTime, player, platforms) {
