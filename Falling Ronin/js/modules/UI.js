@@ -7,13 +7,15 @@ export class UI {
         this.startGameCallback = null;
         this.returnToMenuCallback = null; //  Callback for returning to menu
         this.autoReturnTimeout = null; // For level complete auto return
-        this.createMapSelectionScreen();
-        this.createCoordinatesDisplay();
-        this.createDeathCounterDisplay();
-        this.createCheckpointDisplay();
-        this.createLevelCompleteScreen();
-        this.createDeathMessageDisplay();
-        this.createReturnToMenuButton();
+
+
+        this.createMapSelectionScreen();  // map selection screen UI
+        this.createCoordinatesDisplay();  // Coordinates display for debugging
+        this.createDeathCounterDisplay(); // Death counter display
+        this.createCheckpointDisplay();   // Checkpoint display
+        this.createLevelCompleteScreen(); // Level complete screen
+        this.createDeathMessageDisplay(); // Death message display
+        this.createReturnToMenuButton();  // Return to menu button
     }
 
     //function that comes directly from the main file passing from the gameclass
@@ -190,7 +192,7 @@ export class UI {
             }
         };
         
-        musicButton.onclick = () => this.toggleMusic();
+        musicButton.onclick = () => this.toggleMusicButton();
         container.appendChild(musicButton);
 
         //====================================================
@@ -274,13 +276,13 @@ export class UI {
     //===========================================================
     // Method called when the music button is pressed
     //===========================================================
-    toggleMusic() {
+    toggleMusicButton() {
         if (!window.musicManager) return;
 
         // Ensure user interaction is registered for autoplay policies
         window.musicManager.hasUserInteracted = true;
 
-        const isEnabled = window.musicManager.toggle();
+        const isEnabled = window.musicManager.toggleMusic();
         const musicButton = document.getElementById('musicToggleButton');
 
         if (musicButton) {

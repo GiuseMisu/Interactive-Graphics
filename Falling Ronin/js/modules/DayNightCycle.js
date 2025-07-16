@@ -28,28 +28,22 @@ export class DayNightCycle {
                 day: {
                     top: new THREE.Color(0x5DADE2),    // Lighter blue at top
                     horizon: new THREE.Color(0xAED6F1), // Pale blue at horizon
-                    sun: new THREE.Color(0xFEF9E7)     // Warm near sun
                 },
                 sunset: {
                     top: new THREE.Color(0x5D6D7E),    // Lighter blue-gray 
                     horizon: new THREE.Color(0xE67E22), // Softer orange
-                    sun: new THREE.Color(0xF39C12)     // Golden orange
                 },
                 night: {
                     top: new THREE.Color(0x2C3E50),    // Less dark blue at top
                     horizon: new THREE.Color(0x34495E), // Lighter at horizon
-                    moon: new THREE.Color(0x7F8C8D),   // Lighter gray near moon
-                    sun: new THREE.Color(0x5D6D7E)     // Lighter fallback color
                 },
                 mutedSunset: {
                     top: new THREE.Color(0x34495E),
                     horizon: new THREE.Color(0xE67E22),
-                    sun: new THREE.Color(0xF39C12)
                 },
                 twilightColors: {
                     top: new THREE.Color(0x2C3E50),
                     horizon: new THREE.Color(0x34495E),
-                    sun: new THREE.Color(0x5D6D7E)
                 }
             };
         
@@ -204,7 +198,6 @@ export class DayNightCycle {
             positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
             positions[i * 3 + 1] = radius * Math.cos(phi); //y dipende solo da phi, non da theta, perche phi è l'angolo from the top to the bottom of the sphere
             positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-            
         }
         
         starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -260,7 +253,6 @@ export class DayNightCycle {
         if (sunHeight < -0.1) {
             this.stars.visible = true;
             this.stars.material.opacity = 0.7 + Math.sin(this.time * 8) * 0.2;
-            //this.stars.rotation.y += deltaTime * 0.01;
         } else {
             this.stars.visible = false;
         }
@@ -359,24 +351,21 @@ export class DayNightCycle {
             const factor = (sunHeight - 0.05) / 0.15; //--> makes the transition smoother
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.sunset.top, this.skyColors.day.top, factor),
-                horizon: new THREE.Color().lerpColors(this.skyColors.sunset.horizon, this.skyColors.day.horizon, factor),
-                sun: new THREE.Color().lerpColors(this.skyColors.sunset.sun, this.skyColors.day.sun, factor)
+                horizon: new THREE.Color().lerpColors(this.skyColors.sunset.horizon, this.skyColors.day.horizon, factor)
             };
         }
         else if (sunHeight > -0.05) {
             const factor = (sunHeight + 0.05) / 0.1; //--> makes the transition smoother
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.night.top, this.skyColors.mutedSunset.top, factor),
-                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.mutedSunset.horizon, factor),
-                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, this.skyColors.mutedSunset.sun, factor)
+                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.mutedSunset.horizon, factor)
             };
         } 
         else if (sunHeight > -0.2) {
             const factor = (sunHeight + 0.2) / 0.15; //--> makes the transition smoother
             currentColors = {
                 top: new THREE.Color().lerpColors(this.skyColors.night.top, this.skyColors.twilightColors.top, factor),
-                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.twilightColors.horizon, factor),
-                sun: new THREE.Color().lerpColors(this.skyColors.night.moon, this.skyColors.twilightColors.sun, factor)
+                horizon: new THREE.Color().lerpColors(this.skyColors.night.horizon, this.skyColors.twilightColors.horizon, factor)
             };
         } 
         else {

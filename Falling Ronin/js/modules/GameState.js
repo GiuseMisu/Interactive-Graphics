@@ -29,7 +29,7 @@ export class GameState {
     //=========================== CHECKPOINTS  METHODS ===========================
 
     // Checkpoint methods, needed to manage checkpoints 
-    //Function called from inside the checkpoint class constructor 
+    //Function called from inside the checkpoint class constructor when created
     addCheckpoint(platformId, position, platformName) {
         //bind checkpoint to platform
         this.checkpoints.set(platformId, {
@@ -39,6 +39,7 @@ export class GameState {
         });
     }
     
+    //called inside player once it steps on a checkpoint platform
     activateCheckpoint(platformId) {
         // take the reference of the checkpoint from the platform (jointed before)
         const checkpoint = this.checkpoints.get(platformId); 
@@ -53,6 +54,7 @@ export class GameState {
         return false; // Already reached or doesn't exist
     }
     
+    //function called inside player when it dies and needs to respawn a checkpoint is searched
     getActiveCheckpointPosition() {
         // Return the position of the active checkpoint if it exists
         if (this.activeCheckpoint && this.checkpoints.has(this.activeCheckpoint)) {

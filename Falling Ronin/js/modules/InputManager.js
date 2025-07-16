@@ -13,7 +13,7 @@ export class InputManager {
     }
     
     setupEventListeners() {
-        // Set up event listeners for keydown and keyup events
+        // Set up event listeners for keydown and keyup events ---> called inside the main.js file
         // WINDOW IS USED TO CATCH ALL THE EVENTS
         window.addEventListener('keydown', this.handleKeyDown.bind(this));
         window.addEventListener('keyup', this.handleKeyUp.bind(this));
@@ -47,7 +47,7 @@ export class InputManager {
             const now = performance.now(); 
             // If W is pressed again within 300ms, start sprinting
             if (now - this.lastWPress < 300) {
-                this.gameState.player?.startSprint();
+                this.gameState.player?.startSprint(); //? to avoid errors if player is not defined
             }
             // Update last W press time
             this.lastWPress = now;
@@ -59,7 +59,7 @@ export class InputManager {
         // This is to prevent double jumping from the air, so the check is done inside the player class not here because is not about the timingof the last press
         if (key === ' ') {
             const now = performance.now();
-            this.gameState.player?.jump();
+            this.gameState.player?.jump(); //? to avoid errors if player is not defined
             this.lastSpacePress = now;
         }
 

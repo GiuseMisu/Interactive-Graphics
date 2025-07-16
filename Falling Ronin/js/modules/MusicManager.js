@@ -70,7 +70,7 @@ export class MusicManager {
         });
     }
 
-    toggle() {
+    toggleMusic() {
         if (!this.hasUserInteracted) {
             // Wait for user interaction first
             return this.isEnabled;
@@ -80,7 +80,7 @@ export class MusicManager {
         if (this.isEnabled) {
             // If music was playing before, advance to next track
             if (this.isPlaying) {
-                this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+                this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length; // Cycle to next track
                 this.playCurrentTrack();
             } else {
                 // Start playing music from the beginning
@@ -115,13 +115,6 @@ export class MusicManager {
     playNextTrack() {
         this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
         this.playCurrentTrack();
-    }
-
-    setVolume(volume) {
-        this.volume = Math.max(0, Math.min(1, volume));
-        this.audioElements.forEach(audio => {
-            audio.volume = this.volume;
-        });
     }
 
     getMusicEnabled() {

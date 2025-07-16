@@ -919,7 +919,7 @@ export class Player {
             this.currentSpeed = this.moveSpeed;
             this.animationSpeedMultiplier = 1.1; // Reset animation speed
             this.sprintTimeout = null;
-        }, 2500); // Sprint duration in milliseconds is 2.5 seconds
+        }, 2500); // Sprint duration in milliseconds, 2.5 in seconds
     }
 
     //====================== COLLISION HELPERS ======================
@@ -942,7 +942,6 @@ export class Player {
             pos.z + size.depth / 2
         );
     }   
-    
     
     getHighestStandingPlatformY() {
         if (!this.model || !this.platformManager) {

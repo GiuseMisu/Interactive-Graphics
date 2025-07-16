@@ -15,7 +15,7 @@ export class Map1 {
         this.assetManager = assetManager; // Reference to asset manager
         
         this.platforms = [];
-        this.barrels = [];
+        this.barrels = []; // Array to hold all barrels -> increased by using the barrelSpawnCallback
         this.shurikens = [];
         this.trapDoorSpawners = []; 
         this.checkpointPlatforms = new Map(); // Track which platforms are checkpoints
@@ -93,6 +93,7 @@ export class Map1 {
         const barrelSpawnCallback = (barrel) => {
             this.barrels.push(barrel);
         };
+        
         bounciness = 0.5;
         const spawner = new TrapDoorSpawner(
             this.scene, x, spawnerY, z, this.gameState, barrelSpawnCallback, orientation, frequency_barrel_spawn, bounciness, friction
@@ -105,7 +106,7 @@ export class Map1 {
         // Remove all platforms from the scene
         MapTools.clearPlatforms(this.platforms);
         // Remove all barrels from the scene
-        MapTools.clearBarrels(this.scene, this.barrels);
+        MapTools.clearBarrels(this.scene, this.barrels); //array of barrels
         // Remove all shurikens from the scene
         MapTools.clearShurikens(this.shurikens);
         // Clean up all trap door spawners

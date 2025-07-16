@@ -1,15 +1,6 @@
 import * as THREE from 'three';
 import { Barrel } from './Barrel.js';
 
-/**
- * - Each orientation determines the direction the door opens and barrels roll
- * Orientations:
- * - 'east': Door opens toward +X, barrels roll east
- * - 'west': Door opens toward -X, barrels roll west  
- * - 'north': Door opens toward -Z, barrels roll north
- * - 'south': Door opens toward +Z, barrels roll south
- */
-
 export class TrapDoorSpawner {
     constructor(scene, x, y, z, gameState = null, barrelSpawnCallback = null, orientation = 'east', spawnFrequency = 3.0, bounciness = 0.6, friction = 0.5) {
         this.scene = scene;
@@ -194,9 +185,9 @@ export class TrapDoorSpawner {
         const canvas = document.createElement('canvas');
         canvas.width = 128;
         canvas.height = 128;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d'); //context for 2D drawing
         
-        // wood base
+        // wood base 2d texture
         const gradient = ctx.createLinearGradient(0, 0, 128, 0);
         gradient.addColorStop(0, '#8B4513');
         gradient.addColorStop(0.3, '#A0522D');
@@ -209,7 +200,7 @@ export class TrapDoorSpawner {
         // horizontal wood grain lines
         ctx.strokeStyle = '#654321';
         ctx.lineWidth = 1;
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 8; i++) { //8 bands of wood
             ctx.beginPath();
             ctx.moveTo(0, i * 16 + Math.random() * 8);
             ctx.lineTo(128, i * 16 + Math.random() * 8);
@@ -413,11 +404,11 @@ export class TrapDoorSpawner {
         // Math.random()  generates a random value between 0 and 1, then we scale it to a range of 0.1 to 1.3 for Y velocity
         const randomYVelocity = (Math.random() - 0.2) * 1.5; // THE POSSIBLE VALUES ARE BETWEEN 0.1 AND 1.3
         const directionVariation = (Math.random() - 0.5) * 0.8;
-        
-        // Calculate primary direction based on orientation
+
+        // got the direction of movement of barrel and speed. multiply them to have the barrel velocity
         const primaryVelocity = this.config.barrelDirection.clone().multiplyScalar(baseSpeed);
         
-        // Add variation perpendicular to the main direction
+        // Add variation to the main direction
         let perpendicularDirection;
         if (this.config.rotationAxis === 'z') {
             // East/West: perpendicular is Z direction
@@ -427,7 +418,10 @@ export class TrapDoorSpawner {
             perpendicularDirection = new THREE.Vector3(directionVariation, 0, 0);
         }
         
+        //final velocity with some small randomization to x and z directions
         const finalVelocity = primaryVelocity.add(perpendicularDirection);
+        
+        // Add random Y velocity for barrel bounce
         finalVelocity.y = randomYVelocity; 
         
         barrel.velocity.copy(finalVelocity);
@@ -442,12 +436,12 @@ export class TrapDoorSpawner {
             (Math.random() - 0.5) * 0.8,
             (Math.random() - 0.5) * 0.8
         );
-        
-        // Notify the map that a barrel was spawned
+
+        // the barrel barrelSpawnCallback is a function defined in the Map1.js and Map2.js that
+        // add the spawned barrel to the barrels array, enabling the map to track and update the barrels during gameplay
         if (this.barrelSpawnCallback) {
             this.barrelSpawnCallback(barrel);
         }
-        
         return barrel;
     }
         
@@ -475,60 +469,5 @@ export class TrapDoorSpawner {
         this.scene.remove(this.doorGroup);
         this.scene.remove(this.warningLight);
         this.scene.remove(this.warningPointLight);
-    }
-    
-    // Get available orientations
-    static getAvailableOrientations() {
-        return ['east', 'west', 'north', 'south'];
-    }
-    
-    // Get current orientation
-    getOrientation() {
-        return this.orientation;
-    }
-    
-    // Change orientation (requires recreation of the door)
-    setOrientation(newOrientation) {
-        if (!TrapDoorSpawner.getAvailableOrientations().includes(newOrientation)) {
-            console.warn(`Invalid orientation: ${newOrientation}. Using 'east' as default.`);
-            newOrientation = 'east';
-        }
-        
-        if (newOrientation !== this.orientation) {
-            this.orientation = newOrientation;
-            this.setOrientationConfig();
-            
-            // Recreate the door with new orientation
-            this.destroy();
-            this.createTrapDoor();
-            this.createWarningLight();
-        }
-    }
-    
-    // Get direction vector for barrel spawning (for debugging)
-    getBarrelDirection() {
-        return this.config.barrelDirection.clone();
-    }
-    
-    // Get current spawn frequency
-    getSpawnFrequency() {
-        return this.spawnFrequency;
-    }
-    
-    // Set spawn frequency (updates cooldown duration to match)
-    setSpawnFrequency(frequency) {
-        if (frequency <= 0) {
-            console.warn('Spawn frequency must be positive. Using default value of 3.0 seconds.');
-            frequency = 3.0; //default value
-        }
-        
-        this.spawnFrequency = frequency;
-        this.cooldownDuration = this.spawnFrequency;
-        
-        // If currently in cooldown and the new frequency is shorter than remaining time,
-        // adjust the timer to prevent excessively long waits
-        if (this.animationState === 'cooldown' && this.animationTimer > this.cooldownDuration) {
-            this.animationTimer = this.cooldownDuration;
-        }
     }
 }
